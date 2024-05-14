@@ -78,6 +78,58 @@ ParamCentering <- function(kmat_zz, z_mat, H, mu_hat, Sigma_hat) {
     .Call('_QuadratiK_ParamCentering', PACKAGE = 'QuadratiK', kmat_zz, z_mat, H, mu_hat, Sigma_hat)
 }
 
+#' Compute kernel-based quadratic distance test for Normality
+#'
+#' @param x_mat A matrix containing the observations.
+#' @param h The bandwidth parameter for the Gaussian kernel function.
+#' @param mu_hat Mean vector for the reference distribution (if available)
+#' @param Sigma_hat Covariance matrix of the reference distribution (if available)
+#' 
+#' @return A scalar value representing the test statistic.
+#'
+#' @useDynLib QuadratiK
+#' @rdname kbNormTest
+#' @keywords internal
+#' 
+#' @noRd
+kbNormTest <- function(x_mat, h, mu_hat, Sigma_hat) {
+    .Call('_QuadratiK_kbNormTest', PACKAGE = 'QuadratiK', x_mat, h, mu_hat, Sigma_hat)
+}
+
+#' Poisson kernel-based test for Uniformity on the Sphere
+#' 
+#' Compute the Poisson kernel-based test for Uniformity given a sample of observations on the Sphere
+#'
+#' @param x_mat A matrix containing the observations.
+#' @param rho Concentration parameter of the Poisson kernel.
+#'
+#' @return Vector with the values of the U-statistic and V-statistic
+#'
+#' @useDynLib QuadratiK
+#' @rdname statPoissonUnif
+#' @keywords internal
+#' 
+#' @noRd
+statPoissonUnif <- function(x_mat, rho) {
+    .Call('_QuadratiK_statPoissonUnif', PACKAGE = 'QuadratiK', x_mat, rho)
+}
+
+#'
+#' Exact variance of two-sample test 
+#' 
+#' Compute the exact variance of kernel test for the two-sample problem under 
+#' the null hypothesis that F=G.
+#'
+#' @param Kcen the matrix with centered kernel values
+#' @param nsamples vector indicating sample's membership.
+#'
+#' @return the value of computed variance.
+#' 
+#' @keywords internal
+var_two <- function(Kcen, nsamples) {
+    .Call('_QuadratiK_var_two', PACKAGE = 'QuadratiK', Kcen, nsamples)
+}
+
 #' Compute kernel-based quadratic distance two-sample test with Normal kernel
 #'
 #' @param x_mat A matrix containing observations from the first sample
@@ -103,41 +155,21 @@ stat2sample <- function(x_mat, y_mat, h, mu_hat, Sigma_hat, centeringType = "Non
     .Call('_QuadratiK_stat2sample', PACKAGE = 'QuadratiK', x_mat, y_mat, h, mu_hat, Sigma_hat, centeringType)
 }
 
-#' Compute kernel-based quadratic distance test for Normality
 #'
-#' @param x_mat A matrix containing the observations.
-#' @param h The bandwidth parameter for the Gaussian kernel function.
-#' @param mu_hat Mean vector for the reference distribution (if available)
-#' @param Sigma_hat Covariance matrix of the reference distribution (if available)
-#' @param centeringType String indicating the method used for centering the normal kernel ('Param' or 'Nonparam').
+#' Exact variance of k-sample test 
+#' 
+#' Compute the exact variance of kernel test for the k-sample problem under 
+#' the null hypothesis that F1=...=Fk.
 #'
-#' @return A scalar value representing the test statistic.
+#' @param Kcen the matrix with centered kernel values
+#' @param sizes vector indicating sample's size.
+#' @param cum_size vector indicating sample's cumulative sizes.
 #'
-#' @useDynLib QuadratiK
-#' @rdname kbNormTest
+#' @return the value of computed variance.
+#' 
 #' @keywords internal
-#' 
-#' @noRd
-kbNormTest <- function(x_mat, h, mu_hat, Sigma_hat, centeringType = "Param") {
-    .Call('_QuadratiK_kbNormTest', PACKAGE = 'QuadratiK', x_mat, h, mu_hat, Sigma_hat, centeringType)
-}
-
-#' Poisson kernel-based test for Uniformity on the Sphere
-#' 
-#' Compute the Poisson kernel-based test for Uniformity given a sample of observations on the Sphere
-#'
-#' @param x_mat A matrix containing the observations.
-#' @param rho Concentration parameter of the Poisson kernel.
-#'
-#' @return Vector with the values of the U-statistic and V-statistic
-#'
-#' @useDynLib QuadratiK
-#' @rdname statPoissonUnif
-#' @keywords internal
-#' 
-#' @noRd
-statPoissonUnif <- function(x_mat, rho) {
-    .Call('_QuadratiK_statPoissonUnif', PACKAGE = 'QuadratiK', x_mat, rho)
+var_k <- function(Kcen, sizes, cum_size) {
+    .Call('_QuadratiK_var_k', PACKAGE = 'QuadratiK', Kcen, sizes, cum_size)
 }
 
 #' Kernel-based quadratic distance k-sample tests

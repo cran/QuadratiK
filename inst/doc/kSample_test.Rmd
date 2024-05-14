@@ -7,7 +7,12 @@ vignette: >
   %\VignetteEngine{knitr::rmarkdown}
   \usepackage[utf8]{inputenc}
 ---
-
+```{r srr-tags, eval = FALSE, echo = FALSE}
+#' srr tags
+#' 
+#' 
+#' @srrstats {G1.5} k-sample test example in the associated paper
+```
 ### $k$-sample test
 
 We generated three samples, with $n=200$ observations each, from a 2-dimensional Gaussian distributions with mean vectors $\mu_1 = (0, \frac{\sqrt{3}}{3})$, ${\mu}_2 = (-\frac{1}{2}, -\frac{\sqrt{3}}{6})$ and $\mu_3 = (\frac{1}{2}, -\frac{\sqrt{3}}{6})$, and the Identity matrix as covariance matrix. In this situation, the generated samples are well separated, following different Gaussian distributions, i.e. $X_1 \sim N_2(\mu_1, I)$, $X_2 \sim N_2(\mu_2, I)$ and $X_3 \sim N_2(\mu_3, I)$}. The vector ``y`` indicates the membership to groups.  
@@ -15,7 +20,7 @@ We generated three samples, with $n=200$ observations each, from a 2-dimensional
 library(mvtnorm)
 library(QuadratiK)
 sizes <- rep(200,3)
-eps = 1
+eps <- 1
 set.seed(2468)
 x1 <- rmvnorm(sizes[1], mean = c(0,sqrt(3)*eps/3))
 x2 <- rmvnorm(sizes[2], mean = c(-eps/2,-sqrt(3)*eps/6))
@@ -25,7 +30,7 @@ y <- as.factor(rep(c(1,2,3), times=sizes))
 ```
 Recall that the computed test statistics correspond to the omnibus tests.
 ```{r}
-h=1.5
+h <- 1.5
 set.seed(2468)
 k_test <- kb.test(x=x, y=y, h=h)
 k_test

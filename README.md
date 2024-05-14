@@ -1,6 +1,10 @@
+[![Project Status: Active – The project has reached a stable, usable state and is being actively developed.](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
+
+[![CRAN_Status_Badge](http://www.r-pkg.org/badges/version/QuadratiK)](https://cran.r-project.org/package=QuadratiK)
+
 # Collection of Methods Constructed using the Kernel-Based Quadratic Distances
 
-It is implemented in R and Python, providing a comprehensive set of goodness-of-fit tests and clustering technique using kernel-based quadratic distances. This framework aims to bridge the gap between the statistical and machine learning literature. It includes:
+\code{QuadratiK} provides the first implementation, in R and Python, of a comprehensive set of goodness-of-fit tests and a clustering technique for spherical data using kernel-based quadratic distances. This framework aims to bridge the gap between the statistical and machine learning literature. It includes:
 
 - **Goodness-of-Fit Tests**: The software implements one, two, and k-sample tests for goodness of fit, offering an efficient and mathematically sound way to assess the fit of probability distributions. Expanded capabilities include supporting tests for uniformity on the *d*-dimensional Sphere based on Poisson kernel densities.
 
@@ -19,7 +23,9 @@ Email: [gsaracen@buffalo.edu](mailto:gsaracen@buffalo.edu)
 
 ## References
 
-- Saraceno Giovanni, Markatou Marianthi, Mukhopadhyay Raktim, Golzy Mojgan (2023). Goodness-of-fit and clustering of spherical data: The QuadratiK package in R and Python. Technical Report, Department of Biostatistics, University at Buffalo.
+- Saraceno Giovanni, Markatou Marianthi, Mukhopadhyay Raktim, Golzy Mojgan 
+(2024). Goodness-of-Fit and Clustering of Spherical Data: the QuadratiK 
+package in R and Python. arXiv preprint [arXiv:2402.02290](https://arxiv.org/abs/2402.02290).
 
 - Ding Yuxin, Markatou Marianthi, Saraceno Giovanni (2023). “Poisson Kernel-Based Tests for Uniformity on the d-Dimensional Sphere.” Statistica Sinica. doi: [10.5705/ss.202022.0347](https://doi.org/10.5705/ss.202022.0347).
 
