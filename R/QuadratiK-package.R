@@ -1,9 +1,8 @@
-#' @docType package
 #' @name QuadratiK-package
 #' @title Collection of Methods Constructed using the Kernel-Based Quadratic 
 #'          Distances
 #' @description It is implemented in R and Python, providing a comprehensive set
-#' of goodness-of-fit tests and clustering technique using kernel-based 
+#' of goodness-of-fit tests and a clustering technique using kernel-based 
 #' quadratic distances. This framework aims to bridge the gap between the 
 #' statistical and machine learning literature. It includes:
 #' \itemize{
@@ -43,7 +42,7 @@
 #' Sampling, Journal of Computational and Graphical Statistics, 29:4, 758-770, 
 #' DOI: 10.1080/10618600.2020.1740713.
 #' 
-#' Markatou M, Saraceno G, Chen Y (2023). “Two- and k-Sample Tests Based on 
+#' Markatou M, Saraceno G, Chen Y (2024). “Two- and k-Sample Tests Based on 
 #' Quadratic Distances.” Manuscript, (Department of Biostatistics, 
 #' University at Buffalo).
 #' 
@@ -54,4 +53,5 @@
 #' @srrstats {G3.0} in all the codes floating point numbers are not compared
 #' @srrstats {G5.7, G5.9} Verified through the simulation studies in the 
 #'                        indicated references. 
-NULL
+#' 
+"_PACKAGE"

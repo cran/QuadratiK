@@ -8,11 +8,11 @@
 #'          \code{y}, the selection of h is performed for the corresponding 
 #'          test.
 #' \itemize{
-#'    \item if \code{y} = NULL, the function performs the tests for normality o
-#'          n \code{x}
+#'    \item if \code{y} = NULL, the function performs the tests for normality on
+#'          \code{x}.
 #'    \item if \code{y} is a data matrix, with same dimensions of \code{x}, the 
 #'          function performs the two-sample test between \code{x} and \code{y}.
-#'    \item if \code{y} if a numeric or factor vector, indicating the group 
+#'    \item if \code{y} is a numeric or factor vector, indicating the group 
 #'          memberships for each observation, the function performs the k-sample
 #'          test.
 #' }
@@ -46,7 +46,7 @@
 #' The function performs the selection of the optimal value for the tuning 
 #' parameter \eqn{h} of the normal kernel function, for normality test, the 
 #' two-sample and k-sample KBQD tests. It performs a small simulation study,
-#' generating sample according to the family of \code{alternative} specified, 
+#' generating samples according to the family of \code{alternative} specified, 
 #' for the chosen values of \code{h_values} and \code{delta}.
 #' 
 #' @references
@@ -67,7 +67,9 @@
 #' @importFrom sn rmsn
 #' @import doParallel
 #' @import foreach
-#' @import stats
+#' @importFrom stats cov
+#' @importFrom stats aggregate
+#' @importFrom stats power
 #' @import rlecuyer
 #' @import ggplot2
 #' @import RcppEigen
@@ -195,16 +197,16 @@ select_h <- function(x, y=NULL, alternative=NULL, method="subsampling", b=0.8,
       dk <- delta_dim*delta[k]
       
       if(alternative=='location'){
-         xnew <- sn::rmsn(n, xi = mean_dat, Omega = S_dat, alpha = skew_data)
-         ynew <- sn::rmsn(m, xi = mean_dat + dk, Omega = S_dat, 
+         xnew <- rmsn(n, xi = mean_dat, Omega = S_dat, alpha = skew_data)
+         ynew <- rmsn(m, xi = mean_dat + dk, Omega = S_dat, 
                           alpha = skew_data)
       } else if(alternative=='scale'){
-         xnew <- sn::rmsn(n, xi = mean_dat, Omega = S_dat, alpha = skew_data)
-         ynew <- sn::rmsn(m, xi = mean_dat , Omega = dk*S_dat, 
+         xnew <- rmsn(n, xi = mean_dat, Omega = S_dat, alpha = skew_data)
+         ynew <- rmsn(m, xi = mean_dat , Omega = dk*S_dat, 
                           alpha = skew_data)
       } else if(alternative=='skewness'){
-         xnew <- sn::rmsn(n, xi = mean_dat, Omega = S_dat, alpha = skew_data)
-         ynew <- sn::rmsn(m, xi = mean_dat, Omega = S_dat, alpha = skew_data+dk)
+         xnew <- rmsn(n, xi = mean_dat, Omega = S_dat, alpha = skew_data)
+         ynew <- rmsn(m, xi = mean_dat, Omega = S_dat, alpha = skew_data+dk)
       }
       
       #x <- as.matrix(xnew[sample(n, replace = FALSE),])
@@ -236,8 +238,8 @@ select_h <- function(x, y=NULL, alternative=NULL, method="subsampling", b=0.8,
       }
       
       xnew <- rbind(
-         sn::rmsn(nk*(K-1), xi = mean_dat, Omega = S_dat, alpha = skew_data),
-         sn::rmsn(nk, xi = mean_tilde, Omega = S_tilde, alpha = skew_tilde))
+         rmsn(nk*(K-1), xi = mean_dat, Omega = S_dat, alpha = skew_data),
+         rmsn(nk, xi = mean_tilde, Omega = S_tilde, alpha = skew_tilde))
       ynew <- matrix(rep(1:K, each=nk),ncol=1)
       
       

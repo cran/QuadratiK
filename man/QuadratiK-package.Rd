@@ -2,12 +2,13 @@
 % Please edit documentation in R/QuadratiK-package.R
 \docType{package}
 \name{QuadratiK-package}
+\alias{QuadratiK}
 \alias{QuadratiK-package}
 \title{Collection of Methods Constructed using the Kernel-Based Quadratic
 Distances}
 \description{
 It is implemented in R and Python, providing a comprehensive set
-of goodness-of-fit tests and clustering technique using kernel-based
+of goodness-of-fit tests and a clustering technique using kernel-based
 quadratic distances. This framework aims to bridge the gap between the
 statistical and machine learning literature. It includes:
 \itemize{
@@ -47,9 +48,19 @@ the Sphere: Convergence Properties, Identifiability, and a Method of
 Sampling, Journal of Computational and Graphical Statistics, 29:4, 758-770,
 DOI: 10.1080/10618600.2020.1740713.
 
-Markatou M, Saraceno G, Chen Y (2023). “Two- and k-Sample Tests Based on
+Markatou M, Saraceno G, Chen Y (2024). “Two- and k-Sample Tests Based on
 Quadratic Distances.” Manuscript, (Department of Biostatistics,
 University at Buffalo).
+}
+\seealso{
+Useful links:
+\itemize{
+  \item \url{https://cran.r-project.org/package=QuadratiK}
+  \item \url{https://github.com/giovsaraceno/QuadratiK-package}
+  \item \url{https://giovsaraceno.github.io/QuadratiK-package/}
+  \item Report bugs at \url{https://github.com/giovsaraceno/QuadratiK-package/issues}
+}
+
 }
 \author{
 Giovanni Saraceno, Marianthi Markatou,

@@ -8,11 +8,11 @@
 #' @param y Numeric matrix or vector of data values. Depending on the input 
 #'          \code{y}, the corresponding test is performed.
 #' \itemize{
-#'    \item if \code{y} = NULL, the function performs the tests for normality o
-#'          n \code{x}
+#'    \item if \code{y} = NULL, the function performs the tests for normality on
+#'          \code{x}
 #'    \item if \code{y} is a data matrix, with same dimensions of \code{x}, the 
 #'          function performs the two-sample test between \code{x} and \code{y}.
-#'    \item if \code{y} if a numeric or factor vector, indicating the group 
+#'    \item if \code{y} is a numeric or factor vector, indicating the group 
 #'          memberships for each observation, the function performs the k-sample
 #'          test.
 #' }
@@ -72,7 +72,7 @@
 #' }
 #'
 #' @references
-#' Markatou, M., Saraceno, G., Chen Y (2023). “Two- and k-Sample Tests Based on 
+#' Markatou, M., Saraceno, G., Chen Y (2024). “Two- and k-Sample Tests Based on 
 #' Quadratic Distances.” Manuscript, (Department of Biostatistics, University at
 #' Buffalo)
 #'
@@ -100,7 +100,6 @@
 #' my_test <- kb.test(x=dat,y=group,h=0.5, method="subsampling",b=0.9)
 #' my_test
 #'
-#' @import methods
 #' @import Rcpp
 #' @import RcppEigen
 #'
@@ -329,32 +328,32 @@ setMethod("kb.test", signature(x = "ANY"),
 #' 
 #' @export
 setMethod("show", "kb.test",
-          function(object) {
-             cat( "\n", object@method, "\n")
-             
-             if(length(object@Vn)==0){
-                
-                cat("\t\t\t U-statistic \n")
-                cat("--------------------------------------------\n")
-                cat("H0 is rejected: ", object@H0_Un, "\n")
-                cat("Test Statistic: ", object@Un, "\n")
-                cat("Critical value (CV):\t", object@CV_Un, "\n")
-                
-             } else {
-                
-                cat("\t\t\t U-statistic \t\t V-statistic \n")
-                cat("--------------------------------------------\n")
-                cat("H0 is rejected: \t", object@H0_Un, "\t\t", object@H0_Vn, "\n")
-                cat("Test Statistic: \t", object@Un, "\t\t", object@Vn, "\n")
-                cat("Critical value (CV):\t", object@CV_Un, "\t\t", object@CV_Vn, "\n")
-                
-             }
-             
-             cat("CV method: ", object@cv_method, "\n")
-             cat("Selected tuning parameter h: ", object@h$h_sel, "\n")
-             
-             cat("\n")
-          })
+ function(object) {
+    cat( "\n", object@method, "\n")
+    
+    if(length(object@Vn)==0){
+       
+       cat("U-statistics\t Dn \t\t Trace \n")
+       cat("------------------------------------------------\n")
+       cat("Test Statistic:\t", object@Un[1], "\t", object@Un[2], "\n")
+       cat("Critical Value:\t", object@CV_Un[1], "\t", object@CV_Un[2], "\n")
+       cat("H0 is rejected:\t", object@H0_Un[1], "\t\t", object@H0_Un[2], "\n")
+       
+       cat("CV method: ", object@cv_method, "\n")
+    } else {
+       
+       cat("\t\tU-statistic\tV-statistic\n")
+       cat("------------------------------------------------\n")
+       cat("Test Statistic:\t", object@Un, "\t", object@Vn, "\n")
+       cat("Critical Value:\t", object@CV_Un, "\t", object@CV_Vn, "\n")
+       cat("H0 is rejected:\t", object@H0_Un, "\t\t", object@H0_Vn, "\n")
+       
+    }
+    
+    cat("Selected tuning parameter h: ", object@h$h_sel, "\n")
+    
+    cat("\n")
+ })
 #'
 #' Summarizing kernel-based quadratic distance results
 #'
@@ -371,7 +370,8 @@ setMethod("show", "kb.test",
 #'    \item \code{qqplots} Figure with qq-plots for each variable.
 #' }
 #'
-#' @import ggpubr
+#' @importFrom ggpubr ggarrange
+#' @importFrom ggpp geom_table_npc
 #' @import ggplot2
 #'
 #'@examples
@@ -383,6 +383,12 @@ setMethod("show", "kb.test",
 #' summary(my_test)
 #' 
 #' @srrstats {G1.4} roxigen2 is used
+#' 
+#' @importFrom stats IQR
+#' @importFrom stats median
+#' @importFrom stats sd
+#' @importFrom stats qqnorm
+#' @importFrom ggpp geom_table_npc
 #' 
 #' @export
 setMethod("summary", "kb.test", function(object) {
@@ -469,9 +475,13 @@ setMethod("summary", "kb.test", function(object) {
          stats[length(stats) +1] <- stats_step
          
          pl_stat <- ggplot() +
-            ggpp::annotate('table', x = 0.5, y = 0.5, 
-                     label = data.frame(Stat = rownames(stats_step),stats_step),
-                     hjust = 0.5, vjust = 0.5) +
+      geom_table_npc(data = data.frame(Stat = rownames(stats_step), stats_step),
+                           aes(npcx = 0.5, npcy = 0.5, 
+             label = list(data.frame(Stat = rownames(stats_step), stats_step))),
+                           hjust = 0.5, vjust = 0.5) +
+         # annotate('table', x = 0.5, y = 0.5, 
+         #          label = data.frame(Stat = rownames(stats_step),stats_step),
+         #          hjust = 0.5, vjust = 0.5) +
             theme_void() +
             ggtitle("")+
             scale_color_brewer(palette='Set1')
@@ -492,14 +502,16 @@ setMethod("summary", "kb.test", function(object) {
    }
    # Print main results of the test
    cat( "\n", object@method, "\n")
-   if(is.null(object@Vn)){
+   if(length(object@Vn)==0){
       test_results <- data.frame(
+         Statistic = c("Dn", "Trace"),
          Test_Statistic = object@Un,
          Critical_Value = object@CV_Un,
          Reject_H0 = object@H0_Un
       )
    } else {
       test_results <- data.frame(
+         Statistic = c("Un", "Vn"),
          Test_Statistic = c(object@Un,object@Vn),
          Critical_Value = c(object@CV_Un,object@CV_Vn),
          Reject_H0 = c(object@H0_Un,object@H0_Vn)
