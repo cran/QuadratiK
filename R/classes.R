@@ -6,12 +6,12 @@
 #' quadratic distance tests. This includes the normality test, the two-sample 
 #' test statistics and the k-sample tests.
 #'
-#' @slot method String indicating the normal kernel-based quadratic distance 
+#' @slot method String indicating the kernel-based quadratic distance 
 #'              test performed.
-#' @slot Un The value of the test U-statistics.
+#' @slot Un The value of the test U-statistic.
 #' @slot Vn The value of the test V-statistic.
 #' @slot H0_Un A logical value indicating whether or not the null hypothesis is 
-#'          rejected according to U-statistics.
+#'          rejected according to U-statistic.
 #' @slot H0_Vn A logical value indicating whether or not the null hypothesis is 
 #'          rejected according to Vn.
 #' @slot data List of samples X (and Y).
@@ -37,6 +37,8 @@
 #' 
 #' @srrstats {G1.4} roxigen2 is used
 #' 
+#' @seealso [kb.test()] for the function that generates this class.
+#' 
 #' @export
 setClass("kb.test",
          slots = list(
@@ -61,8 +63,7 @@ setClass("kb.test",
 #' @description A class to represent the results of Poisson kernel-based 
 #'              quadratic distance tests for Uniformity on the sphere.
 #'
-#' @slot method The method used for the test ("Poisson Kernel-based quadratic 
-#'              distance test of Uniformity on the Sphere").
+#' @slot method Description of the test.
 #' @slot x Matrix of data
 #' @slot Un The value of the U-statistic.
 #' @slot CV_Un The critical value for Un computed through replications.
@@ -77,10 +78,12 @@ setClass("kb.test",
 #' @slot B Number of replications.
 #' @slot var_Un exact variance of the kernel-based U-statistic.
 #'
+#' @seealso [pk.test()] 
+#' 
 #' @examples
 #' # create a pk.test object
 #' d=3
-#' size=200
+#' size=100
 #' x_sp <- sample_hypersphere(d, n_points=size)
 #' pk.test(x_sp,rho=0.8)
 #'
@@ -114,7 +117,7 @@ setClass("pk.test",
 #'             each value of possible number of clusters considered.
 #' @slot input List of input data
 #'
-#' @details See the function \code{pkbc} for more details.
+#' @seealso [pkbc()] for more details.
 #' 
 #' @examples 
 #' data("wireless")

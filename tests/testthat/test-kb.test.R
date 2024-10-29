@@ -27,7 +27,7 @@ test_that("Error on invalid method input", {
 test_that("Error on invalid b input", {
    set.seed(123)
    expect_error(kb.test(x = matrix(rnorm(100), ncol = 2), h=0.5, b = 10), 
-                "b indicates the proportion used for the subsamples in the 
+                "b indicates the proportion used for the subsamples in the
                      subsampling algoritm. It must be in (0,1].", fixed=TRUE)
 })
 
@@ -58,6 +58,28 @@ test_that("Error on invalid centeringType input", {
 # Test 5: Correct handling of vector x input
 test_that("Handle vector x input correctly", {
    
+   # NA in the data
+   datx <- matrix(rnorm(100),ncol=2)
+   daty <- matrix(rnorm(100),ncol=2)
+   daty[1,] <- NA 
+   expect_error(kb.test(x = datx, y = daty, h = 0.8), 
+                'There are missing values in y!', fixed=TRUE)
+   datx[1,] <- NA 
+   expect_error(kb.test(x = datx, h = 0.8), 
+                'There are missing values in x!', fixed=TRUE)
+   
+   # Inf or Nan in the data
+   datx <- matrix(rnorm(100),ncol=2)
+   daty <- matrix(rnorm(100),ncol=2)
+   daty[1,] <- Inf 
+   expect_error(kb.test(x = datx, y = daty, h = 0.8), 
+                'There are undefined values in y, that is Nan, Inf, -Inf', 
+                fixed=TRUE)
+   datx[1,] <- Inf 
+   expect_error(kb.test(x = datx, h = 0.8), 
+                'There are undefined values in x, that is Nan, Inf, -Inf', 
+                fixed=TRUE)
+   
    set.seed(123)
    # x is a vector
    result <- kb.test(x = rnorm(10), h=0.5)
@@ -71,6 +93,11 @@ test_that("Handle vector x input correctly", {
    # x is a matrix
    result <- kb.test(x = matrix(rnorm(20),ncol=2), h=0.5)
    expect_s4_class(result, "kb.test")
+   
+   # test show method
+   output <- capture.output(show(result))
+   expect_true(any(grepl("\t\tU-statistic\tV-statistic", output)))
+   expect_true(any(grepl("H0 is rejected:\t", output)))
    
    # test summary method
    s <- summary(result)
@@ -133,9 +160,9 @@ test_that("Functionality with valid inputs", {
 # Test 7: Testing main functionality: k-sample test
 test_that("Functionality with valid inputs", {
    set.seed(123)
-   x <- matrix(rnorm(100), ncol = 2)
-   y <- rep(c(1,2), each=25)
-   result <- kb.test(x, y, h=0.5, method = "subsampling", b = 0.5)
+   x <- matrix(rnorm(200), ncol = 2)
+   y <- rep(c(1,2), each=50)
+   result <- kb.test(x, y, h=0.5, method = "bootstrap")
    expect_s4_class(result, "kb.test")
    expect_equal(result@method, "Kernel-based quadratic distance k-sample test")
    expect_true(is.numeric(result@Un))
@@ -144,8 +171,8 @@ test_that("Functionality with valid inputs", {
    
    # test show method
    output <- capture.output(show(result))
-   expect_true(any(grepl("U-statistics\t Dn \t\t Trace", output)))
-   expect_true(any(grepl("CV method:  subsampling ", output)))
+   expect_true(any(grepl("U-statistic\t Dn \t\t Trace", output)))
+   expect_true(any(grepl("CV method:  bootstrap ", output)))
    
    # test summary method
    s <- summary(result)
@@ -171,13 +198,13 @@ test_that("Selection of h from kb.test", {
    set.seed(123)
    x <- matrix(rnorm(100), ncol = 2)
    y <- rep(c(1,2), each=25)
-   
+
    result <- kb.test(x, method = "subsampling", mu_hat = c(0,0),
                      Sigma_hat = diag(2), b = 0.5)
    expect_s4_class(result, "kb.test")
    expect_equal(result@method, "Kernel-based quadratic distance Normality test")
    expect_equal(class(result@h$h_sel), "numeric")
-   
+
    result <- kb.test(x, y, method = "subsampling", b = 0.5)
    expect_s4_class(result, "kb.test")
    expect_equal(class(result@h$h_sel), "numeric")

@@ -16,7 +16,7 @@
 #' 
 #' @noRd
 computeKernelMatrix <- function(x_mat, y_mat, H) {
-    .Call('_QuadratiK_computeKernelMatrix', PACKAGE = 'QuadratiK', x_mat, y_mat, H)
+    .Call(`_QuadratiK_computeKernelMatrix`, x_mat, y_mat, H)
 }
 
 #' Compute the Poisson kernel matrix between observations in a sample.
@@ -32,7 +32,7 @@ computeKernelMatrix <- function(x_mat, y_mat, H) {
 #' 
 #' @noRd
 computePoissonMatrix <- function(x_mat, rho) {
-    .Call('_QuadratiK_computePoissonMatrix', PACKAGE = 'QuadratiK', x_mat, rho)
+    .Call(`_QuadratiK_computePoissonMatrix`, x_mat, rho)
 }
 
 #' Non-parametric centered kernel
@@ -53,7 +53,7 @@ computePoissonMatrix <- function(x_mat, rho) {
 #' 
 #' @noRd
 NonparamCentering <- function(kmat_zz, n_z) {
-    .Call('_QuadratiK_NonparamCentering', PACKAGE = 'QuadratiK', kmat_zz, n_z)
+    .Call(`_QuadratiK_NonparamCentering`, kmat_zz, n_z)
 }
 
 #' Parametric centered kernel
@@ -75,7 +75,7 @@ NonparamCentering <- function(kmat_zz, n_z) {
 #' 
 #' @noRd
 ParamCentering <- function(kmat_zz, z_mat, H, mu_hat, Sigma_hat) {
-    .Call('_QuadratiK_ParamCentering', PACKAGE = 'QuadratiK', kmat_zz, z_mat, H, mu_hat, Sigma_hat)
+    .Call(`_QuadratiK_ParamCentering`, kmat_zz, z_mat, H, mu_hat, Sigma_hat)
 }
 
 #' Compute kernel-based quadratic distance test for Normality
@@ -93,7 +93,7 @@ ParamCentering <- function(kmat_zz, z_mat, H, mu_hat, Sigma_hat) {
 #' 
 #' @noRd
 kbNormTest <- function(x_mat, h, mu_hat, Sigma_hat) {
-    .Call('_QuadratiK_kbNormTest', PACKAGE = 'QuadratiK', x_mat, h, mu_hat, Sigma_hat)
+    .Call(`_QuadratiK_kbNormTest`, x_mat, h, mu_hat, Sigma_hat)
 }
 
 #' Poisson kernel-based test for Uniformity on the Sphere
@@ -111,7 +111,7 @@ kbNormTest <- function(x_mat, h, mu_hat, Sigma_hat) {
 #' 
 #' @noRd
 statPoissonUnif <- function(x_mat, rho) {
-    .Call('_QuadratiK_statPoissonUnif', PACKAGE = 'QuadratiK', x_mat, rho)
+    .Call(`_QuadratiK_statPoissonUnif`, x_mat, rho)
 }
 
 #'
@@ -127,7 +127,7 @@ statPoissonUnif <- function(x_mat, rho) {
 #' 
 #' @keywords internal
 var_two <- function(Kcen, nsamples) {
-    .Call('_QuadratiK_var_two', PACKAGE = 'QuadratiK', Kcen, nsamples)
+    .Call(`_QuadratiK_var_two`, Kcen, nsamples)
 }
 
 #' Compute kernel-based quadratic distance two-sample test with Normal kernel
@@ -138,6 +138,8 @@ var_two <- function(Kcen, nsamples) {
 #' @param centeringType String indicating the method used for centering the normal kernel
 #' @param mu_hat Mean vector for the reference distribution 
 #' @param Sigma_hat Covariance matrix of the reference distribution
+#' @param compute_variance indicates if the nonparametric variance is computed.
+#'                         Default is TRUE. 
 #'
 #' @return A scalar value representing the test statistic
 #'
@@ -151,8 +153,8 @@ var_two <- function(Kcen, nsamples) {
 #' @keywords internal
 #' 
 #' @noRd
-stat2sample <- function(x_mat, y_mat, h, mu_hat, Sigma_hat, centeringType = "Nonparam") {
-    .Call('_QuadratiK_stat2sample', PACKAGE = 'QuadratiK', x_mat, y_mat, h, mu_hat, Sigma_hat, centeringType)
+stat2sample <- function(x_mat, y_mat, h, mu_hat, Sigma_hat, centeringType = "Nonparam", compute_variance = TRUE) {
+    .Call(`_QuadratiK_stat2sample`, x_mat, y_mat, h, mu_hat, Sigma_hat, centeringType, compute_variance)
 }
 
 #'
@@ -169,7 +171,7 @@ stat2sample <- function(x_mat, y_mat, h, mu_hat, Sigma_hat, centeringType = "Non
 #' 
 #' @keywords internal
 var_k <- function(Kcen, sizes, cum_size) {
-    .Call('_QuadratiK_var_k', PACKAGE = 'QuadratiK', Kcen, sizes, cum_size)
+    .Call(`_QuadratiK_var_k`, Kcen, sizes, cum_size)
 }
 
 #' Kernel-based quadratic distance k-sample tests
@@ -181,6 +183,8 @@ var_k <- function(Kcen, sizes, cum_size) {
 #' @param h The bandwidth parameter for the kernel function.
 #' @param sizes Vector with sample sizes of the considered samples
 #' @param cum_size Vector indicating the cumulative sizes, adding one sample at the time.
+#' @param compute_variance indicates if the nonparametric variance is computed.
+#'                         Default is TRUE. 
 #'
 #' @return A vector containing the two k-sample test statistics
 #'
@@ -189,7 +193,7 @@ var_k <- function(Kcen, sizes, cum_size) {
 #' @keywords internal
 #' 
 #' @noRd
-stat_ksample_cpp <- function(x, y, h, sizes, cum_size) {
-    .Call('_QuadratiK_stat_ksample_cpp', PACKAGE = 'QuadratiK', x, y, h, sizes, cum_size)
+stat_ksample_cpp <- function(x, y, h, sizes, cum_size, compute_variance = TRUE) {
+    .Call(`_QuadratiK_stat_ksample_cpp`, x, y, h, sizes, cum_size, compute_variance)
 }
 

@@ -1,7 +1,8 @@
 #' Select the value of the kernel tuning parameter
 #'
 #' This function computes the kernel bandwidth of the Gaussian kernel for the 
-#' normality, two-sample and k-sample kernel-based quadratic distance (KBQD) tests.
+#' normality, two-sample and k-sample kernel-based quadratic distance (KBQD) 
+#' tests.
 #'
 #' @param x Data set of observations from X.
 #' @param y Numeric matrix or vector of data values. Depending on the input 
@@ -28,8 +29,9 @@
 #' @param delta Vector of parameter values indicating chosen alternatives
 #' @param h_values Values of the tuning parameter used for the selection
 #' @param Nrep Number of bootstrap/permutation/subsampling replications.
-#' @param n_cores Number of cores used to parallel the h selection algorithm 
-#'                (default:2).
+#' @param n_cores Number of cores used to parallel the h selection algorithm. 
+#'                If this is not provided, the function will detect the 
+#'                available cores.
 #' @param Quantile The quantile to use for critical value estimation, 0.95 is 
 #'                 the default value.
 #' @param power.plot Logical. If TRUE, it is displayed the plot of power for 
@@ -42,6 +44,7 @@
 #'                       values of \code{delta} and \code{h_values};
 #'    \item \code{power.plot} power plots (if \code{power.plot} is \code{TRUE}).
 #' }
+#' 
 #' @details
 #' The function performs the selection of the optimal value for the tuning 
 #' parameter \eqn{h} of the normal kernel function, for normality test, the 
@@ -49,10 +52,60 @@
 #' generating samples according to the family of \code{alternative} specified, 
 #' for the chosen values of \code{h_values} and \code{delta}.
 #' 
+#' We consider target alternatives \eqn{F_\delta(\hat{\mathbf{\mu}},
+#' \hat{\mathbf{\Sigma}}, \hat{\mathbf{\lambda}})}, where 
+#' \eqn{\hat{\mathbf{\mu}}, \hat{\mathbf{\Sigma}}} and 
+#' \eqn{\hat{\mathbf{\lambda}}} indicate the location,
+#' covariance and skewness parameter estimates from the pooled sample. 
+#' - Compute the estimates of the mean \eqn{\hat{\mu}}, covariance matrix
+#'  \eqn{\hat{\Sigma}} and skewness \eqn{\hat{\lambda}} from the pooled sample.
+#' - Choose the family of alternatives \eqn{F_\delta = F_\delta(\hat{\mu}
+#' ,\hat{\Sigma}, \hat{\lambda})}. \cr \cr
+#' *For each value of \eqn{\delta} and \eqn{h}:*
+#' - Generate \eqn{\mathbf{X}_1,\ldots,\mathbf{X}_{k-1}  \sim F_0}, for 
+#' \eqn{\delta=0};
+#' - Generate \eqn{\mathbf{X}_k \sim F_\delta};
+#' - Compute the \eqn{k}-sample test statistic between \eqn{\mathbf{X}_1, 
+#' \mathbf{X}_2, \ldots, \mathbf{X}_k} with kernel parameter \eqn{h};
+#' - Compute the power of the test. If it is greater than 0.5, 
+#' select \eqn{h} as optimal value. 
+#' - If an optimal value has not been selected, choose the \eqn{h} which
+#'  corresponds to maximum power. 
+#'
+#' The available \code{alternative} are \cr
+#' *location* alternatives, \eqn{F_\delta = 
+#' SN_d(\hat{\mu} + \delta,\hat{\Sigma}, \hat{\lambda})},with 
+#' \eqn{\delta = 0.2, 0.3, 0.4}; \cr
+#' *scale* alternatives, 
+#' \eqn{F_\delta = SN_d(\hat{\mu} ,\hat{\Sigma}*\delta, \hat{\lambda})}, 
+#' \eqn{\delta = 0.1, 0.3, 0.5}; \cr
+#' *skewness* alternatives, 
+#' \eqn{F_\delta = SN_d(\hat{\mu} ,\hat{\Sigma}, \hat{\lambda} + \delta)}, 
+#' with \eqn{\delta = 0.2, 0.3, 0.6}. \cr
+#' The values of \eqn{h = 0.6, 1, 1.4, 1.8, 2.2} and \eqn{N=50} are set as 
+#' default values. \cr
+#' The function \code{select_h()} allows the user to 
+#' set the values of \eqn{\delta} and \eqn{h} for a more extensive grid search. 
+#' We suggest to set a more extensive grid search when computational resources 
+#' permit.
+#' 
+#' @note Please be aware that the `select_h()` function may take a significant 
+#' amount of time to run, especially with larger datasets or when using an 
+#' larger number of parameters in \code{h_values} and \code{delta}. Consider 
+#' this when applying the function to large or complex data.
+#' 
 #' @references
-#' Markatou, M., Saraceno, G., Chen, Y. (2023). “Two- and k-Sample Tests Based 
-#' on Quadratic Distances.” Manuscript, (Department of Biostatistics, University
-#' at Buffalo)
+#' Markatou, M. and Saraceno, G. (2024). “A Unified Framework for
+#' Multivariate Two- and k-Sample Kernel-based Quadratic Distance 
+#' Goodness-of-Fit Tests.” \cr 
+#' https://doi.org/10.48550/arXiv.2407.16374
+#' 
+#' Saraceno, G., Markatou, M., Mukhopadhyay, R. and Golzy, M. (2024). 
+#' Goodness-of-Fit and Clustering of Spherical Data: the QuadratiK package 
+#' in R and Python. \cr
+#' https://arxiv.org/abs/2402.02290.
+#' 
+#' @seealso The function \code{select_h} is used in the [kb.test()] function.
 #' 
 #' @examples
 #' # Select the value of h using the mid-power algorithm
@@ -65,16 +118,21 @@
 #'
 #' @importFrom moments skewness
 #' @importFrom sn rmsn
-#' @import doParallel
-#' @import foreach
+#' @importFrom doParallel registerDoParallel
+#' @importFrom parallel makeCluster
+#' @importFrom parallel clusterExport
+#' @importFrom parallel detectCores
+#' @importFrom parallel stopCluster
+#' @import foreach 
 #' @importFrom stats cov
 #' @importFrom stats aggregate
 #' @importFrom stats power
-#' @import rlecuyer
 #' @import ggplot2
 #' @import RcppEigen
+#' @import rlecuyer
+#' @importFrom Rcpp sourceCpp
 #'
-#' @useDynLib QuadratiK
+#' @useDynLib QuadratiK, .registration = TRUE
 #'
 #' @srrstats {G1.4} roxigen2 is used
 #' @srrstats {G2.0, G2.0a} input y, delta_dim, B, b
@@ -88,7 +146,6 @@
 select_h <- function(x, y=NULL, alternative=NULL, method="subsampling", b=0.8, 
                      B=100, delta_dim=1, delta=NULL, h_values=NULL,Nrep=50, 
                      n_cores=2, Quantile=0.95, power.plot=TRUE) {
-   
    
    # Convert vectors to a single column matrix
    if(!is.numeric(x) & !is.data.frame(x)){
@@ -213,8 +270,9 @@ select_h <- function(x, y=NULL, alternative=NULL, method="subsampling", b=0.8,
       #y <- as.matrix(ynew[sample(m, replace = FALSE),])
       
       STATISTIC <- stat2sample(xnew, ynew, h, rep(0,d),
-                               diag(d),"Nonparam")
-      CV <- compute_CV(B, Quantile, pooled, n, m, h, method, b)
+                               diag(d),"Nonparam",compute_variance=FALSE)
+      CV <- compute_CV(B, Quantile, pooled, n, m, h, method, b,
+                       compute_variance=FALSE)
       cv <- CV$cv
       return(c(STATISTIC[1] < cv[1]))
    }
@@ -246,8 +304,9 @@ select_h <- function(x, y=NULL, alternative=NULL, method="subsampling", b=0.8,
       sizes_new <- as.vector(table(ynew))
       cum_size_new <- c(0,cumsum(sizes_new))
       STATISTIC <- stat_ksample_cpp(xnew, ynew, h, sizes_new,
-                                                cum_size_new)
-      CV <- cv_ksample(xnew, ynew, h, B, b, Quantile, method)
+                                    cum_size_new,compute_variance=FALSE)
+      CV <- cv_ksample(xnew, ynew, h, B, b, Quantile, method,
+                       compute_variance=FALSE)
       cv <- CV$cv
       return(c(STATISTIC[1] < cv[1]))
    }
@@ -278,8 +337,25 @@ select_h <- function(x, y=NULL, alternative=NULL, method="subsampling", b=0.8,
       return(c(STATISTIC[1] < CV))
    }
    
-   num_cores <- as.numeric(n_cores)
-   registerDoParallel(cores=n_cores)
+   # chk <- Sys.getenv("_R_CHECK_LIMIT_CORES_", "")
+   # if (nzchar(chk) && chk == "TRUE") {
+   #    # nocov start
+   #    num_cores <- 2
+   #    # nocov end
+   # } elseif(is.null(n_cores)) {
+   #    num_cores <- detectCores()
+   # } else 
+   if (is.numeric(n_cores)) {
+      num_cores <- as.numeric(n_cores)
+   } else {
+      stop("n_cores must be a numeric value")
+   }
+   
+   cl <- parallel::makeCluster(num_cores)
+   doParallel::registerDoParallel(cl)
+   # parallel::clusterExport(cl, varlist = c("kbNormTest", "normal_CV",
+   #                                       "cv_ksample", "stat_ksample_cpp",
+   #                                       "compute_CV","stat2sample"))
    
    D <- length(delta)
    
@@ -289,16 +365,19 @@ select_h <- function(x, y=NULL, alternative=NULL, method="subsampling", b=0.8,
    params <- expand.grid(Rep=rep_values, h = h_values)
    params <- split(params, seq(nrow(params)))
    
-   res <- data.frame(Rep=numeric(), delta=numeric(), 
+   res <- data.frame(delta=numeric(),
                      h=numeric(), power=numeric())
-   pars <- NULL
    
+   i <- NULL
    for(k in k_values){
-      results <- foreach(pars = params, .combine = rbind, 
-                         .packages=c("sn", "moments", "stats", 
-                                     "rlecuyer", "QuadratiK")) %dopar% {
-         
-         h <- as.numeric(pars[[2]])
+   
+      results <- foreach::foreach(i = seq_along(params), 
+                         .combine = rbind,
+                         .packages=c("sn", "moments", "stats",
+                                     "rlecuyer")) %dopar% {
+
+         h <- as.numeric(params[[i]]$h)
+
          if(is.null(y)){
             
             objective_result <- objective_norm(h,k)
@@ -311,18 +390,19 @@ select_h <- function(x, y=NULL, alternative=NULL, method="subsampling", b=0.8,
             
             objective_result <- objective_k(h, k)
          }
-         data.frame(Rep=pars[[1]], delta=delta[k], h=h, score=objective_result)
+         
+         data.frame(delta=delta[k], 
+                    h=h, power=objective_result)
       }
       
-      results$score <- 1 - results$score
-      results_mean <- aggregate(score ~ h + delta , results, mean)
-      names(results_mean)[3] <- "power"
+      results$power <- 1 - results$power
+      results_mean <- aggregate(power ~ h + delta , data = results, FUN = mean) 
       
       res <- rbind(res,results_mean)
       
       # Select the minimum h where power > 0.5
       # If no such h exists, select the minimum h with the maximum power
-      min_h_power_gt_05 <- subset(results_mean, power >= 0.5)
+      min_h_power_gt_05 <- subset(res, power >= 0.5)
       if (nrow(min_h_power_gt_05) > 0) {
          min_h <- min_h_power_gt_05$h[1]
          break
@@ -332,12 +412,12 @@ select_h <- function(x, y=NULL, alternative=NULL, method="subsampling", b=0.8,
    }
    
    if(is.null(min_h)){
-      results_mean <- results_mean[order(-results_mean$power, results_mean$h), ]
-      min_h <- results_mean$h[1]
+      res <- res[order(-res$power, res$h), ]
+      min_h <- res$h[1]
    }
+
+   parallel::stopCluster(cl)
    
-   stopImplicitCluster()
-   results <- list(h_sel = min_h, power = res)
    
    pl <- ggplot(res, aes(x = h, y = power)) +
       geom_line(aes(col = as.factor(delta)), linewidth = 0.9, alpha=.9) +
@@ -354,11 +434,12 @@ select_h <- function(x, y=NULL, alternative=NULL, method="subsampling", b=0.8,
             axis.text.y = element_text(size = 11),
             strip.text = element_text(size = 14)) +
       scale_color_brewer(palette='Set1')
-
-   results$power.plot <- pl
+   
+   results <- list(h_sel = min_h, power = res, power.plot = pl)
    
    if(power.plot){
       print(pl)
    }
    return(results)
+   
 }

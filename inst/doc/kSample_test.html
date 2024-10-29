@@ -340,86 +340,172 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 
 
 
-<div id="k-sample-test" class="section level3">
-<h3><span class="math inline">\(k\)</span>-sample test</h3>
-<p>We generated three samples, with <span class="math inline">\(n=200\)</span> observations each, from a
+<p>Consider <span class="math inline">\(k\)</span> random samples of
+i.i.d. observations <span class="math inline">\(\mathbf{x}^{(i)}_1,
+\mathbf{x}^{(i)}_{2}, \ldots, \mathbf{x}^{(i)}_{n_i} \sim F_i\)</span>,
+for <span class="math inline">\(i = 1, \ldots, k\)</span>.</p>
+<p>We test if the samples are generated from the same <em>unknown</em>
+distribution <span class="math inline">\(\bar{F}\)</span>, that is:
+<span class="math display">\[
+H_0: F_1 = F_2 = \ldots = F_k = \bar{F}
+\]</span> versus the alternative where two of the <span class="math inline">\(k\)</span> distributions differ, that is <span class="math display">\[
+H_1: F_i \not = F_j,
+\]</span> for some <span class="math inline">\(1 \le i \not = j \le
+k\)</span>.</p>
+<p>Upon the construction of a matrix distance <span class="math inline">\(\hat{\mathbf{D}}\)</span>, with off-diagonal
+elements <span class="math display">\[
+    \hat{D}_{ij} = \frac{1}{n_i n_j}
+\sum_{\ell=1}^{n_i}\sum_{r=1}^{n_j}K_{\bar{F}}(\mathbf{x}^{(i)}_\ell,\mathbf{x}^{(j)}_r),
+\qquad \mbox{ for }i \not= j
+\]</span> and in the diagonal <span class="math display">\[  
+\hat{D}_{ii} = \frac{1}{n_i (n_i -1)} \sum_{\ell=1}^{n_i}\sum_{r\not=
+\ell}^{n_i}K_{\bar{F}}(\mathbf{x}^{(i)}_\ell,\mathbf{x}^{(i)}_r), \qquad
+\mbox{ for }i = j,
+\]</span> where <span class="math inline">\(K_{\bar{F}}\)</span> denotes
+the Normal kernel <span class="math inline">\(K\)</span>, defined as</p>
+<p><span class="math display">\[
+K(\mathbf{s}, \mathbf{t}) = (2 \pi)^{-d/2}
+\left(\det{\mathbf{\Sigma}_h}\right)^{-\frac{1}{2}}  
+\exp\left\{-\frac{1}{2}(\mathbf{s} - \mathbf{t})^\top
+\mathbf{\Sigma}_h^{-1}(\mathbf{s} - \mathbf{t})\right\},
+\]</span></p>
+<p>for every <span class="math inline">\(\mathbf{s}, \mathbf{t} \in
+\mathbb{R}^d \times \mathbb{R}^d\)</span>, with covariance matrix <span class="math inline">\(\mathbf{\Sigma}_h = h^2 I\)</span> and tuning
+parameter <span class="math inline">\(h\)</span>, centered with respect
+to <span class="math display">\[
+\bar{F} = \frac{n_1 \hat{F}_1 + \ldots + n_k \hat{F}_k}{n}, \quad \mbox{
+with } n=\sum_{i=1}^k n_i.
+\]</span> For more information about the centering of the kernel, see
+the documentation of the <code>kb.test()</code> function.</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="fu">help</span>(kb.test) </span></code></pre></div>
+<p>We compute the trace statistic <span class="math display">\[  
+\mathrm{trace}(\hat{\mathbf{D}}_n) =  \sum_{i=1}^{k}\hat{D}_{ii}.
+\]</span> and <span class="math inline">\(D_n\)</span>, derived
+considering all the possible pairwise comparisons in the <span class="math inline">\(k\)</span>-sample null hypothesis, given as <span class="math display">\[  
+D_{n} = (k-1) \mathrm{trace}(\hat{\mathbf{D}}_n) - 2
+\sum_{i=1}^{k}\sum_{j&gt; i}^{k}\hat{D}_{ij}.
+\]</span></p>
+<p>We show the usage of the <code>kb.test()</code> function with the
+following example of <span class="math inline">\(k=3\)</span> samples of
+bivariate observations following normal distributions with different
+mean vectors.</p>
+<p>We generate three samples, with <span class="math inline">\(n=50\)</span> observations each, from a
 2-dimensional Gaussian distributions with mean vectors <span class="math inline">\(\mu_1 = (0, \frac{\sqrt{3}}{3})\)</span>, <span class="math inline">\({\mu}_2 = (-\frac{1}{2},
 -\frac{\sqrt{3}}{6})\)</span> and <span class="math inline">\(\mu_3 =
 (\frac{1}{2}, -\frac{\sqrt{3}}{6})\)</span>, and the Identity matrix as
 covariance matrix. In this situation, the generated samples are well
-separated, following different Gaussian distributions, i.e. <span class="math inline">\(X_1 \sim N_2(\mu_1, I)\)</span>, <span class="math inline">\(X_2 \sim N_2(\mu_2, I)\)</span> and <span class="math inline">\(X_3 \sim N_2(\mu_3, I)\)</span>}. The vector
-<code>y</code> indicates the membership to groups.</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="fu">library</span>(mvtnorm)</span>
-<span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a><span class="fu">library</span>(QuadratiK)</span>
-<span id="cb1-3"><a href="#cb1-3" tabindex="-1"></a>sizes <span class="ot">&lt;-</span> <span class="fu">rep</span>(<span class="dv">200</span>,<span class="dv">3</span>)</span>
-<span id="cb1-4"><a href="#cb1-4" tabindex="-1"></a>eps <span class="ot">&lt;-</span> <span class="dv">1</span></span>
-<span id="cb1-5"><a href="#cb1-5" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">2468</span>)</span>
-<span id="cb1-6"><a href="#cb1-6" tabindex="-1"></a>x1 <span class="ot">&lt;-</span> <span class="fu">rmvnorm</span>(sizes[<span class="dv">1</span>], <span class="at">mean =</span> <span class="fu">c</span>(<span class="dv">0</span>,<span class="fu">sqrt</span>(<span class="dv">3</span>)<span class="sc">*</span>eps<span class="sc">/</span><span class="dv">3</span>))</span>
-<span id="cb1-7"><a href="#cb1-7" tabindex="-1"></a>x2 <span class="ot">&lt;-</span> <span class="fu">rmvnorm</span>(sizes[<span class="dv">2</span>], <span class="at">mean =</span> <span class="fu">c</span>(<span class="sc">-</span>eps<span class="sc">/</span><span class="dv">2</span>,<span class="sc">-</span><span class="fu">sqrt</span>(<span class="dv">3</span>)<span class="sc">*</span>eps<span class="sc">/</span><span class="dv">6</span>))</span>
-<span id="cb1-8"><a href="#cb1-8" tabindex="-1"></a>x3 <span class="ot">&lt;-</span> <span class="fu">rmvnorm</span>(sizes[<span class="dv">3</span>], <span class="at">mean =</span> <span class="fu">c</span>(eps<span class="sc">/</span><span class="dv">2</span>,<span class="sc">-</span><span class="fu">sqrt</span>(<span class="dv">3</span>)<span class="sc">*</span>eps<span class="sc">/</span><span class="dv">6</span>))</span>
-<span id="cb1-9"><a href="#cb1-9" tabindex="-1"></a>x <span class="ot">&lt;-</span> <span class="fu">rbind</span>(x1, x2, x3)</span>
-<span id="cb1-10"><a href="#cb1-10" tabindex="-1"></a>y <span class="ot">&lt;-</span> <span class="fu">as.factor</span>(<span class="fu">rep</span>(<span class="fu">c</span>(<span class="dv">1</span>,<span class="dv">2</span>,<span class="dv">3</span>), <span class="at">times=</span>sizes))</span></code></pre></div>
-<p>Recall that the computed test statistics correspond to the omnibus
-tests.</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a>h <span class="ot">&lt;-</span> <span class="fl">1.5</span></span>
-<span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">2468</span>)</span>
-<span id="cb2-3"><a href="#cb2-3" tabindex="-1"></a>k_test <span class="ot">&lt;-</span> <span class="fu">kb.test</span>(<span class="at">x=</span>x, <span class="at">y=</span>y, <span class="at">h=</span>h)</span>
-<span id="cb2-4"><a href="#cb2-4" tabindex="-1"></a>k_test</span></code></pre></div>
+separated, following different Gaussian distributions, i.e. <span class="math inline">\(X_1 \sim N_2(\mu_1, I)\)</span>, <span class="math inline">\(X_2 \sim N_2(\mu_2, I)\)</span> and <span class="math inline">\(X_3 \sim N_2(\mu_3, I)\)</span>}. In order to
+perform the <span class="math inline">\(k\)</span>-sample tests, we need
+to define the vector <code>y</code> which indicates the membership to
+groups.</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a><span class="fu">library</span>(mvtnorm)</span>
+<span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a><span class="fu">library</span>(QuadratiK)</span>
+<span id="cb2-3"><a href="#cb2-3" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span>
+<span id="cb2-4"><a href="#cb2-4" tabindex="-1"></a>sizes <span class="ot">&lt;-</span> <span class="fu">rep</span>(<span class="dv">50</span>,<span class="dv">3</span>)</span>
+<span id="cb2-5"><a href="#cb2-5" tabindex="-1"></a>eps <span class="ot">&lt;-</span> <span class="dv">1</span></span>
+<span id="cb2-6"><a href="#cb2-6" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">2468</span>)</span>
+<span id="cb2-7"><a href="#cb2-7" tabindex="-1"></a>x1 <span class="ot">&lt;-</span> <span class="fu">rmvnorm</span>(sizes[<span class="dv">1</span>], <span class="at">mean =</span> <span class="fu">c</span>(<span class="dv">0</span>,<span class="fu">sqrt</span>(<span class="dv">3</span>)<span class="sc">*</span>eps<span class="sc">/</span><span class="dv">3</span>))</span>
+<span id="cb2-8"><a href="#cb2-8" tabindex="-1"></a>x2 <span class="ot">&lt;-</span> <span class="fu">rmvnorm</span>(sizes[<span class="dv">2</span>], <span class="at">mean =</span> <span class="fu">c</span>(<span class="sc">-</span>eps<span class="sc">/</span><span class="dv">2</span>,<span class="sc">-</span><span class="fu">sqrt</span>(<span class="dv">3</span>)<span class="sc">*</span>eps<span class="sc">/</span><span class="dv">6</span>))</span>
+<span id="cb2-9"><a href="#cb2-9" tabindex="-1"></a>x3 <span class="ot">&lt;-</span> <span class="fu">rmvnorm</span>(sizes[<span class="dv">3</span>], <span class="at">mean =</span> <span class="fu">c</span>(eps<span class="sc">/</span><span class="dv">2</span>,<span class="sc">-</span><span class="fu">sqrt</span>(<span class="dv">3</span>)<span class="sc">*</span>eps<span class="sc">/</span><span class="dv">6</span>))</span>
+<span id="cb2-10"><a href="#cb2-10" tabindex="-1"></a>x <span class="ot">&lt;-</span> <span class="fu">rbind</span>(x1, x2, x3)</span>
+<span id="cb2-11"><a href="#cb2-11" tabindex="-1"></a>y <span class="ot">&lt;-</span> <span class="fu">as.factor</span>(<span class="fu">rep</span>(<span class="fu">c</span>(<span class="dv">1</span>,<span class="dv">2</span>,<span class="dv">3</span>), <span class="at">times=</span>sizes))</span></code></pre></div>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a><span class="fu">ggplot</span>(<span class="fu">data.frame</span>(<span class="at">x=</span>x, <span class="at">y=</span>y), <span class="fu">aes</span>(<span class="at">x =</span> x[,<span class="dv">1</span>], <span class="at">y =</span> x[,<span class="dv">2</span>], <span class="at">color =</span> y)) <span class="sc">+</span></span>
+<span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="at">size =</span> <span class="dv">2</span>) <span class="sc">+</span></span>
+<span id="cb3-3"><a href="#cb3-3" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">&quot;Generated Points&quot;</span>, <span class="at">x =</span> <span class="st">&quot;X1&quot;</span>, <span class="at">y =</span> <span class="st">&quot;X2&quot;</span>) <span class="sc">+</span></span>
+<span id="cb3-4"><a href="#cb3-4" tabindex="-1"></a>  <span class="fu">theme_minimal</span>()</span></code></pre></div>
+<p><img src="data:image/png;base64,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" /><!-- --></p>
+<p>To use the <code>kb.test()</code> function, we need to provide the
+value for the tuning parameter <span class="math inline">\(h\)</span>.
+The function <code>select_h</code> can be used for identifying on
+<em>optimal</em> value of <span class="math inline">\(h\)</span>. This
+function needs the input <code>x</code> and <code>y</code> as the
+function <code>kb.test</code>, and the selection of the family of
+alternatives. Here we consider the location alternatives.</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">2468</span>)</span>
+<span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a>h_k <span class="ot">&lt;-</span> <span class="fu">select_h</span>(<span class="at">x=</span>x, <span class="at">y=</span>y, <span class="at">alternative=</span><span class="st">&quot;location&quot;</span>)</span></code></pre></div>
+<p><img src="data:image/png;base64,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" /><!-- --></p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a>h_k<span class="sc">$</span>h_sel</span></code></pre></div>
+<pre><code>## [1] 1.2</code></pre>
+<p>The <code>select_h</code> function has also generated a figure
+displaying the obtained power versus the considered <span class="math inline">\(h\)</span>, for each value of alternative <span class="math inline">\(\delta\)</span> considered.</p>
+<p>We can now perform the <span class="math inline">\(k\)</span>-sample
+tests with the <em>optimal</em> value of <span class="math inline">\(h\)</span>.</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">2468</span>)</span>
+<span id="cb7-2"><a href="#cb7-2" tabindex="-1"></a>k_test <span class="ot">&lt;-</span> <span class="fu">kb.test</span>(<span class="at">x=</span>x, <span class="at">y=</span>y, <span class="at">h=</span>h_k<span class="sc">$</span>h_sel)</span>
+<span id="cb7-3"><a href="#cb7-3" tabindex="-1"></a><span class="fu">show</span>(k_test)</span></code></pre></div>
 <pre><code>## 
 ##  Kernel-based quadratic distance k-sample test 
-## U-statistics  Dn          Trace 
+## U-statistic   Dn          Trace 
 ## ------------------------------------------------
-## Test Statistic:   11.844      38.6817 
-## Critical Value:   0.5623288   1.836868 
+## Test Statistic:   3.76127     5.552056 
+## Critical Value:   1.270525    1.876836 
 ## H0 is rejected:   TRUE        TRUE 
 ## CV method:  subsampling 
-## Selected tuning parameter h:  1.5</code></pre>
-<p>When the <span class="math inline">\(k\)</span>-sample test is
-performed, the <code>summary</code> method on the <code>kb.test</code>
-object returns the results of the tests together with the standard
-descriptive statistics for each variable computed, overall, and with
-respect to the provided groups.</p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a>summary_ktest <span class="ot">&lt;-</span> <span class="fu">summary</span>(k_test)</span></code></pre></div>
+## Selected tuning parameter h:  1.2</code></pre>
+<p>The function <code>kb.test()</code> returns an object of class
+<code>kb.test</code>. The <code>show</code> method for the
+<code>kb.test</code> object shows the computed statistics with
+corresponding critical values, and the logical indicating if the null
+hypothesis is rejected. The test correctly rejects the null hypothesis,
+in fact the values of the statistics are greater than the computed
+critical values. The package provides also the <code>summary</code>
+function which returns the results of the tests together with the
+standard descriptive statistics for each variable computed, overall, and
+with respect to the provided groups.</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" tabindex="-1"></a>summary_ktest <span class="ot">&lt;-</span> <span class="fu">summary</span>(k_test)</span></code></pre></div>
 <pre><code>## 
 ##  Kernel-based quadratic distance k-sample test 
-##   Statistic Test_Statistic Critical_Value Reject_H0
-## 1        Dn        11.8440      0.5623288      TRUE
-## 2     Trace        38.6817      1.8368685      TRUE</code></pre>
-<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a>summary_ktest<span class="sc">$</span>summary_tables</span></code></pre></div>
+##   Statistic    Value Critical_Value Reject_H0
+## 1        Dn 3.761270       1.270525      TRUE
+## 2     Trace 5.552056       1.876836      TRUE</code></pre>
+<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" tabindex="-1"></a>summary_ktest<span class="sc">$</span>summary_tables</span></code></pre></div>
 <pre><code>## [[1]]
-##             Group 1    Group 2    Group 3       Overall
-## mean   -0.005959147 -0.5370127  0.5442058  0.0004113282
-## sd      0.997319811  0.9583059  1.0374834  1.0900980006
-## median -0.028244038 -0.5477108  0.5297478 -0.0239486027
-## IQR     1.478884929  1.4105832  1.4234532  1.5377418198
-## min    -2.860006689 -3.1869808 -2.2119189 -3.1869807848
-## max     2.151784802  2.0647648  3.1580700  3.1580700259
+##            Group 1    Group 2    Group 3      Overall
+## mean   -0.05208816 -0.3961768  0.5318161  0.027850399
+## sd      0.96223294  0.8169982  1.1147943  1.039422979
+## median -0.07433374 -0.4171737  0.4466713  0.003313025
+## IQR     1.34379740  1.1499518  1.4976634  1.507024820
+## min    -2.86000669 -2.1929616 -2.1754778 -2.860006689
+## max     1.88750642  1.0851059  2.6517848  2.651784802
 ## 
 ## [[2]]
 ##           Group 1    Group 2    Group 3     Overall
-## mean    0.4935364 -0.4042219 -0.2461729 -0.05228613
-## sd      1.0449582  1.0411639  1.0474989  1.11391575
-## median  0.5281635 -0.4325995 -0.2950922 -0.09520111
-## IQR     1.4001089  1.4662111  1.2867345  1.48444495
-## min    -2.6448703 -2.8786352 -3.4932849 -3.49328492
-## max     3.0792766  2.6788424  2.8290722  3.07927659</code></pre>
-<div id="selection-of-h" class="section level4">
-<h4>Selection of h</h4>
-<p>If a value of <span class="math inline">\(h\)</span> is not provided,
-the function automatically performs the function
-<code>select_h</code>.</p>
-<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" tabindex="-1"></a><span class="co">#k_test_h &lt;- kb.test(x=x, y=y)</span></span></code></pre></div>
-<p>For a more accurate search of the tuning parameter, the function
-<code>select_h</code> can be used.This function needs the input
-<code>x</code> and <code>y</code> as the function <code>kb.test</code>
-for the <span class="math inline">\(k\)</span>-sample problem.</p>
-<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">2468</span>)</span>
-<span id="cb9-2"><a href="#cb9-2" tabindex="-1"></a>h_k <span class="ot">&lt;-</span> <span class="fu">select_h</span>(<span class="at">x=</span>x, <span class="at">y=</span>y, <span class="at">alternative=</span><span class="st">&quot;skewness&quot;</span>)</span></code></pre></div>
-<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" tabindex="-1"></a>h_k<span class="sc">$</span>h_sel</span></code></pre></div>
-<p>The <code>select_h</code> function will also generate a figure
-displaying the obtained power versus the considered <span class="math inline">\(h\)</span>, for each value of skewness alternative
-<span class="math inline">\(\delta\)</span> considered.</p>
+## mean    0.3928294 -0.2851004 -0.4028292 -0.09836674
+## sd      0.9612003  1.1243216  0.9603282  1.07079458
+## median  0.2303015 -0.1667130 -0.3676814 -0.14246592
+## IQR     1.1269249  1.2443774  1.3256384  1.24637078
+## min    -1.1662595 -3.5108957 -2.6488286 -3.51089574
+## max     3.0792766  2.1192756  1.5225887  3.07927659</code></pre>
+<div id="note" class="section level4">
+<h4>Note</h4>
+<p>If a value of <span class="math inline">\(h\)</span> is not provided
+to <code>kb.test()</code>, this function performs the function
+<code>select_h</code> for automatic search of an <em>optimal</em> value
+of <span class="math inline">\(h\)</span> to use. . The following code
+shows its usage, but it is not executed since we would obtain the same
+results.</p>
+<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" tabindex="-1"></a>k_test_h <span class="ot">&lt;-</span> <span class="fu">kb.test</span>(<span class="at">x=</span>x, <span class="at">y=</span>y)</span></code></pre></div>
+<p>For more details visit the help documentation of the
+<code>select_h()</code> function.</p>
+<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" tabindex="-1"></a><span class="fu">help</span>(select_h) </span></code></pre></div>
+<p>In the <code>kb.test()</code> function, the critical value can be
+computed with the subsampling, bootstrap or permutation algorithm. The
+default method is set to subsampling since it needs less computational
+time. For details on the sampling algorithm see the documentation of the
+<code>kb.test()</code> function and the following reference.</p>
+<p>The proposed tests exhibit high power against asymmetric alternatives
+that are close to the null hypothesis and with small sample size, as
+well as in the <span class="math inline">\(k \ge 3\)</span> sample
+comparison, for dimension <span class="math inline">\(d&gt;2\)</span>
+and all sample sizes. For more details, see the extensive simulation
+study reported in the following reference.</p>
 </div>
+<div id="references" class="section level2">
+<h2>References</h2>
+<p>Markatou, M. and Saraceno, G. (2024). “A Unified Framework for
+Multivariate Two- and k-Sample Kernel-based Quadratic Distance
+Goodness-of-Fit Tests.”<br />
+<a href="https://doi.org/10.48550/arXiv.2407.16374">https://doi.org/10.48550/arXiv.2407.16374</a></p>
 </div>
 
 

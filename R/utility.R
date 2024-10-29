@@ -46,17 +46,6 @@ DOF_norm <- function(Sigma_h, V){
    
    const <- den_dof/num_dof
    
-   # h2 <- h^2
-   # dof_num <- 1 - (h2/(h2+2))^(d/2)
-   # dof_den <- ((h2+2)/(h2+4))^(d/2) - 2* (h2/(h2+1))^(d/2)*(h2/(h2+3))^(d/2) +
-   #    (h2/(h2+2))^(d)
-   # dof <- dof_num^2/dof_den
-   # 
-   # c_num <- ((h2+2)/(h2*(h2+4)))^(d/2) - 
-   # 2* (h2/(h2+1))^(d/2)*(1/(h2+3))^(d/2) +
-   #    (h/(h2+2))^(d)
-   # const <- c_num/dof_num
-   # 
    result <- list("DOF"=dof,"Coefficient"=const)
    return(result)
 }
@@ -84,16 +73,12 @@ var_norm <- function(Sigma_h, V, n){
    
    res <- 2/(n*(n-1)) * 1/(2*pi)^(d) * res
    
-   # h2 <- h^2
-   # h_const <- ((h2+2)/(h2^2*(h2+4)))^(d/2) -2/((h2+1)*(h2+3))^(d/2) + (h2+2)^(-d)
-   # res <- 2/(n*(n-1)) * 1/(2*pi)^(d)  * h_const
-   # 
    return(res)
 }
 #'
 #' Generate random sample from the hypersphere
 #'
-#' Generate random sample from the uniform distribution on the hypersphere
+#' Generate a random sample from the uniform distribution on the hypersphere.
 #' 
 #' @param d Number of dimensions.
 #' @param n_points Number of sampled observations.
@@ -196,7 +181,6 @@ compare_qq <- function(sample1, sample2, main_title) {
 #' @param eps precision of displayed statistics
 #'
 #' @import ggplot2
-#' @importFrom ggpp geom_table_npc
 #' @importFrom stats IQR
 #' @importFrom stats median
 #' @importFrom stats sd
@@ -218,18 +202,19 @@ compute_stats <- function(var1, var2, var_name,eps=3) {
    colnames(stats) <- c("Group 1", "Group 2", "Overall")
    rownames(stats) <- c("mean", "sd", "median", "IQR", "min", "max")
    
-   pl <- ggplot() +
-      geom_table_npc(data = data.frame(Stat = rownames(stats), stats),
-                     aes(npcx = 0.5, npcy = 0.5, 
-             label = list(data.frame(Stat = rownames(stats), stats))),
-                     hjust = 0.5, vjust = 0.5) +
-      # ggpp::annotate('table', x = 0.5, y = 0.5, 
-      #                label = data.frame(Stat = rownames(stats),stats), 
-      #                hjust = 0.5, vjust = 0.5) +
-      theme_void() +
-      ggtitle(paste(var_name))+
-      scale_color_brewer(palette='Set1')
+   # pl <- ggplot() +
+   #    geom_table_npc(data = data.frame(Stat = rownames(stats), stats),
+   #                   aes(npcx = 0.5, npcy = 0.5, 
+   #           label = list(data.frame(Stat = rownames(stats), stats))),
+   #                   hjust = 0.5, vjust = 0.5) +
+   #    # ggpp::annotate('table', x = 0.5, y = 0.5, 
+   #    #                label = data.frame(Stat = rownames(stats),stats), 
+   #    #                hjust = 0.5, vjust = 0.5) +
+   #    theme_void() +
+   #    ggtitle(paste(var_name))+
+   #    scale_color_brewer(palette='Set1')
+   # 
    
-   
-   return(list(plots=pl,stats=stats))
+   # return(list(plots=pl,stats=stats))
+   return(list(stats=stats))
 }

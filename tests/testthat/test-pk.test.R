@@ -21,9 +21,22 @@ test_that("Error on invalid x input", {
                 "x must be numeric", fixed=TRUE)
    
    expect_error(pk.test(x = rnorm(50), rho = 0.5),
-         "x must be a matrix or a data.frame with dimension greater 
+         "x must be a matrix or a data.frame with dimension greater
                      than 1.", 
          fixed=TRUE)
+   
+   # NA in the data
+   dat <- matrix(rnorm(100),ncol=2)
+   dat[1,] <- NA 
+   expect_error(pk.test(x = dat, rho = 0.8), 
+                'There are missing values in x!', fixed=TRUE)
+   
+   # Inf or Nan in the data
+   dat <- matrix(rnorm(100),ncol=2)
+   dat[1,] <- Inf 
+   expect_error(pk.test(x = dat, rho = 0.8), 
+                'There are undefined values in x, that is Nan, Inf, -Inf', 
+                fixed=TRUE)
 })
 
 # Test 2: Error on Invalid Quantile Input
@@ -63,15 +76,24 @@ test_that("Functionality with valid inputs", {
    
    size <- 100
    d <- 3
+   
+   # Test does not reject uniformity
    set.seed(123)
    x_sp <- sample_hypersphere(d, n_points=size)
-   
    unif_test <- pk.test(x_sp,rho=0.8)
    
    expect_s4_class(unif_test, "pk.test")
    expect_true(is.numeric(unif_test@Un))
    expect_true(is.numeric(unif_test@Vn))
    expect_false(unif_test@H0_Un)
+   
+   # Test reject uniformity
+   set.seed(123)
+   x_sp <- rpkb(n = size, mu = c(1,0,0), rho = 0.9)$x
+   unif_test <- pk.test(x_sp,rho=0.9)
+   
+   expect_s4_class(unif_test, "pk.test")
+   expect_true(unif_test@H0_Un)
    
    # test show method
    output <- capture.output(show(unif_test))

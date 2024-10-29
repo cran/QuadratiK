@@ -24,6 +24,9 @@ test_that("Random Generation from PKBD works", {
                 'Input argument rho must be within [0,1)',fixed=TRUE)
    expect_error(rpkb(10, mu = c(0,0,0), rho = 0.8), 
                 'Input argument mu cannot be a vector of zeros',fixed=TRUE)
+   expect_error(rpkb(10, mu = 2, rho = 0.8), 
+                'mu must have length >= 2',fixed=TRUE)
+   
    expect_error(rpkb(-10, mu = c(1,0,0), rho = 0.8), 
                 'n must be a positive integer',fixed=TRUE)
    expect_error(rpkb(10, mu = c(1,0,0), rho = 0.8, method = "invalid"), 
@@ -94,5 +97,33 @@ test_that("Random Generation from PKBD works", {
    # higher rho, less variability
    expect_lt(max(abs(colMeans(x$x)-mu)),1e-2)
    
+   
+})
+
+test_that("Random Generation from PKBD compared to wrapped Cauchy", {
+   
+   require(circular)
+
+   # Parameters 
+   n <- 10000
+   location <- circular::circular(pi)  
+   rho <- 0.6
+   set.seed(1234)
+   # Generate data from wrapped cauchy
+   wc <- circular::rwrappedcauchy(n, mu = location, rho = rho)
+   # Generate data from pkbd 
+   pkbd <- rpkb(n, mu = c(-1, 0), rho = rho)$x
+   # Convert Cartesian coordinates to angles for comparison
+   pkbd_angles <- circular::coord2rad(pkbd, 
+                                      control.circular = list(modulo="asis"))
+   
+   # Compute the sample circular quantiles 
+   vect_quantiles <- c(0.05,seq(0.1,0.9,0.05), 0.95)
+   wc_q <- circular::quantile.circular(wc, vect_quantiles)
+   pkbd_q <- circular::quantile.circular(pkbd_angles, vect_quantiles)
+   
+   # Test that the computed quantiles are close
+   tol <- 0.01
+   expect_equal(wc_q, pkbd_q, tolerance = tol)
    
 })

@@ -1,26 +1,52 @@
 #'
 #' The Poisson kernel-based Distribution (PKBD)
 #' 
-#' Density function and random number generation from the Poisson kernel-based 
-#' Distribution with mean direction vector \code{mu} and concentration parameter
-#' \code{rho}.
+#' @description 
+#' The Poisson kernel-based densities are based on the normalized Poisson kernel
+#' and are defined on the \eqn{d}-dimensional unit sphere. Given a vector 
+#' \eqn{\mathbf{\mu} \in \mathcal{S}^{d-1}}, where \eqn{\mathcal{S}^{d-1}= 
+#' \{x \in \mathbb{R}^d : ||x|| = 1\}}, and a parameter \eqn{\rho} such that 
+#' \eqn{0 < \rho < 1}, the probability density function of a \eqn{d}-variate 
+#' Poisson kernel-based density is defined by:
+#' \deqn{f(\mathbf{x}|\rho, \mathbf{\mu}) = \frac{1-\rho^2}{\omega_d 
+#' ||\mathbf{x} - \rho \mathbf{\mu}||^d},}
+#' where \eqn{\mu} is a vector orienting the center of the distribution, 
+#' \eqn{\rho} is a parameter to control the concentration of the distribution 
+#' around the vector \eqn{\mu} and it is related to the variance of the 
+#' distribution. Recall that, for \eqn{x = (x_1, \ldots, x_d) \in \mathbb{R}^d},
+#' \eqn{||x|| = \sqrt{x_1^2 + \ldots + x_d^2}}. Furthermore, \eqn{\omega_d =
+#' 2\pi^{d/2} [\Gamma(d/2)]^{-1}} is the surface area of the unit sphere in
+#' \eqn{\mathbb{R}^d} (see Golzy and Markatou, 2020). When \eqn{\rho \to 0}, 
+#' the Poisson kernel-based density tends to the uniform density on the sphere.
+#' Connections of the PKBDs to other distributions are discussed in detail in 
+#' Golzy and Markatou (2020). Here we note that when \eqn{d=2}, PKBDs reduce to 
+#' the wrapped Cauchy distribution. Additionally, with precise choice of the 
+#' parameters \eqn{\rho} and \eqn{\mu} the two-dimensional PKBD becomes a 
+#' two-dimensional projected normal distribution. However, the connection with 
+#' the \eqn{d}-dimensional projected normal distributions does not carry beyond 
+#' \eqn{d=2}.  
+#' Golzy and Markatou (2020) proposed an acceptance-rejection method for 
+#' simulating data from a PKBD using von Mises-Fisher envelops (\code{rejvmf} 
+#' method). Furthermore Sablica, Hornik and Leydold (2023) proposed new ways for
+#' simulating from the PKBD, using angular central Gaussian envelops 
+#' (\code{rejacg}) or using the projected Saw distributions (\code{rejpsaw}).
 #'  
-#' @param x Matrix (or data.frame) with number of columns >=2.
-#' @param mu Location parameter with same length as the rows of x. Normalized to
-#' length one.
-#' @param rho Concentration parameter, with 0 <= rho < 1.
-#' @param logdens Logical; if 'TRUE', densities d are given as log(d).
+#' @param x Matrix (or data.frame) of data point on the sphere 
+#'          \eqn{\mathcal{S}^{d-1}}, with \eqn{d \ge 2}.
+#' @param mu Location parameter with same length as the rows of \code{x}.
+#' @param rho Concentration parameter, with \eqn{0 \le} \code{rho} \eqn{< 1}.
+#' @param logdens Logical; if 'TRUE', densities are returned in logarithmic
+#'                scale.
 #'
 #' @return 
-#' \code{dpkb} gives the density value.
+#' \code{dpkb} gives the density value;
 #' \code{rpkb} generates random observations from the PKBD. 
 #' 
-#' The number of observations generated is determined by \code{n} for 
-#' \code{rpkb}. This function returns a list with the matrix of generated 
-#' observations \code{x}, the number of tries \code{numTries} and the number of
-#' acceptances \code{numAccepted}.
+#' @details
+#' This function \code{dpkb()} computes the density value for a given point 
+#' \code{x} from the Poisson kernel-based distribution with mean direction
+#' vector \code{mu} and concentration parameter \code{rho}.
 #'
-#' 
 #' @examples
 #' # Generate some data from pkbd density
 #' pkbd_dat <- rpkb(10, c(0.5,0), 0.5)
@@ -82,7 +108,7 @@ dpkb <- function(x, mu, rho, logdens = FALSE) {
 #' @param n number of observations.
 #' @param mu location vector parameter with length indicating the dimension of 
 #'          generated points.
-#' @param rho is the concentration parameter, with 0 <= rho < 1.
+#' @param rho Concentration parameter, with \eqn{0 \le} \code{rho} \eqn{< 1}.
 #' @param method string that indicates the method used for sampling 
 #'          observations. The available methods are 
 #' \itemize{
@@ -99,17 +125,30 @@ dpkb <- function(x, mu, rho, logdens = FALSE) {
 #'               (for 'rejacg' method).
 #' 
 #' @details
+#' The number of observations generated is determined by \code{n} for 
+#' \code{rpkb()}. This function returns a list with the matrix of generated 
+#' observations \code{x}, the number of tries \code{numTries} and the number of
+#' acceptances \code{numAccepted}.
+#' 
+#' A limitation of the \code{rejvmf} is that the method does not ensure the
+#' computational feasibility of the sampler for \eqn{\rho} approaching 1.
+#' 
 #' If the chosen method is 'rejacg', the function \code{uniroot}, from the 
 #' \code{stat} package, is used to estimate the beta parameter. In this case, 
 #' the complete results are provided as output. 
 #' 
+#' @note
+#' If the required packages (`movMF` for \code{rejvmf} method, and
+#' `Tinflex` for \code{rejpsaw}) are not installed, the function will display a
+#' message asking the user to install the missing package(s).
+#' 
 #' @references
-#' Golzy, M., Markatou, M. (2020) Poisson Kernel-Based Clustering on the Sphere:
-#' Convergence Properties, Identifiability, and a Method of Sampling, Journal of
-#' Computational and Graphical Statistics, 29:4, 758-770, 
+#' Golzy, M. and Markatou, M. (2020) Poisson Kernel-Based Clustering on the 
+#' Sphere: Convergence Properties, Identifiability, and a Method of Sampling, 
+#' Journal of Computational and Graphical Statistics, 29:4, 758-770, 
 #' DOI: 10.1080/10618600.2020.1740713.
 #' 
-#' Sablica L., Hornik K., Leydold J. (2023) "Efficient sampling from the PKBD 
+#' Sablica L., Hornik K. and Leydold J. (2023) "Efficient sampling from the PKBD
 #' distribution", Electronic Journal of Statistics, 17(2), 2180-2209.
 #'
 #' @srrstats {G1.0} Reference section reports the related literature.
@@ -125,10 +164,34 @@ dpkb <- function(x, mu, rho, logdens = FALSE) {
 #'                   as separate functions.
 #' 
 #' @export
-rpkb <- function(n, mu, rho, method = 'rejvmf', 
+rpkb <- function(n, mu, rho, method = 'rejacg', 
                  tol.eps = .Machine$double.eps^0.25, 
                  max.iter = 1000) {
    
+
+   # nocov start
+   if (!requireNamespace("movMF", quietly = TRUE)) {
+      install <- readline(prompt = "'movMF' is required for 'rejvmf' method.
+                           Would you like to install it now? (yes/no): ")
+      if (tolower(install) == "yes") {
+         install.packages("movMF")
+      } else {
+         message("'rejvmf' cannot be performed without 'movMF'.")
+         return(NULL)
+      }
+   }
+   
+   if (!requireNamespace("Tinflex", quietly = TRUE)) {
+      install <- readline(prompt = "'Tinflex' is required for 'rejpsaw' method. 
+                           Would you like to install it now? (yes/no): ")
+      if (tolower(install) == "yes") {
+         install.packages("Tinflex")
+      } else {
+         message("'rejpsaw' cannot be performed without 'Tinflex'.")
+         return(NULL)
+      }
+   }
+   # nocov end
    if (rho >= 1 | rho < 0) {
       stop('Input argument rho must be within [0,1)')
    }
@@ -176,12 +239,11 @@ rpkb <- function(n, mu, rho, method = 'rejvmf',
 #' @param p dimension.
 #' 
 #' @references
-#' Golzy, M., Markatou, M. (2020) Poisson Kernel-Based Clustering on the Sphere:
-#' Convergence Properties, Identifiability, and a Method of Sampling, Journal of
-#' Computational and Graphical Statistics, 29:4, 758-770, 
+#' Golzy, M. and Markatou, M. (2020) Poisson Kernel-Based Clustering on the 
+#' Sphere: Convergence Properties, Identifiability, and a Method of Sampling, 
+#' Journal of Computational and Graphical Statistics, 29:4, 758-770, 
 #' DOI: 10.1080/10618600.2020.1740713.
 #'
-#' @importFrom movMF rmovMF
 #' @importFrom stats runif
 #' 
 #' @noRd
@@ -196,7 +258,7 @@ rejvmf <- function(n, rho, mu, p) {
    while (numAccepted < n) {
       numTries <- numTries + 1
       theta<-kappa*mu
-      yx<- rmovMF(1,theta,1)
+      yx<- movMF::rmovMF(1,theta,1)
       v<- yx%*%mu
       f1<- (1-rho**2)/ (( 1 + rho**2 - 2*rho*v)^(p/2))
       u <- runif(1)
@@ -220,7 +282,7 @@ rejvmf <- function(n, rho, mu, p) {
 #' @param p dimension.
 #' 
 #' @references
-#' Sablica L., Hornik K., Leydold J. (2023) "Efficient sampling from the PKBD 
+#' Sablica L., Hornik K. and Leydold J. (2023) "Efficient sampling from the PKBD
 #' distribution", Electronic Journal of Statistics, 17(2), 2180-2209.
 #' 
 #' @importFrom stats runif
@@ -288,11 +350,9 @@ rejacg <- function(n, rho, mu, p, tol.eps, max.iter){
 #' @param p dimension.
 #' 
 #' @references
-#' Sablica L., Hornik K., Leydold J. (2023) "Efficient sampling from the PKBD 
+#' Sablica L., Hornik K. and Leydold J. (2023) "Efficient sampling from the PKBD
 #' distribution", Electronic Journal of Statistics, 17(2), 2180-2209.
 #' 
-#' @importFrom Tinflex Tinflex.setup.C
-#' @importFrom Tinflex Tinflex.sample
 #' 
 #' @noRd
 #' @keywords internal
@@ -313,12 +373,13 @@ rejpsaw <- function(n, rho, mu, p){
       if(p==3) ib <- c(t1+0.000001,t2-0.000001)
       
       ## Create generator object for pSaw distribution
-      pSaw <- Tinflex.setup.C(lpdf, dlpdf, d2lpdf, ib=ib,cT=1, rho=1.05)
+      pSaw <- Tinflex::Tinflex.setup.C(lpdf, dlpdf, d2lpdf, 
+                                       ib=ib,cT=1, rho=1.05)
       ## Print data about generator object.
       #print(gen)
       
       # Step 1
-      W <- Tinflex.sample(pSaw, n=1)
+      W <- Tinflex::Tinflex.sample(pSaw, n=1)
       # Step 2
       y <- sample_hypersphere(p,1)
       # Step 3

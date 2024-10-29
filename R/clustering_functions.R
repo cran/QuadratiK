@@ -1,28 +1,74 @@
 #'
 #' Poisson kernel-based clustering on the sphere
 #'
-#' The function \code{pkbc} performs the Poisson kernel-based clustering 
-#' algorithm on the sphere based on the Poisson kernel-based densities.
-#'
+#' @description
+#' The function \code{pkbc()} performs the Poisson kernel-based clustering 
+#' algorithm on the sphere proposed by Golzy and Markatou (2020). 
+#' The proposed algorithm is based on a mixture, with \eqn{M} components, of 
+#' Poisson kernel-based densities on the hypersphere \eqn{\mathcal{S}^{d-1}}
+#' given by
+#' \deqn{f(x|\Theta) = \sum_{j=1}^M \alpha_j f_j(x|\rho_j, \mu_j)}
+#' where \eqn{\alpha_j}'s are the mixing proportions and \eqn{f_j(x|\rho_j, 
+#' \mu_j)}'s denote the probability density function of a \eqn{d}-variate 
+#' Poisson kernel-based density given as
+#' \deqn{f(\mathbf{x}|\rho, \mathbf{\mu}) = \frac{1-\rho^2}{\omega_d 
+#' ||\mathbf{x} - \rho \mathbf{\mu}||^d}.}
+#' The parameters \eqn{\alpha_j, \mu_j, \rho_j} are estimated through a 
+#' iterative reweighted EM algorithm. \cr
+#' The proposed clustering algorithm exhibits excellent results when 
+#' (1) the clusters are not well separated; (2) the data points
+#' are fairly well concentrated around the vectors \eqn{\mu_j} of each cluster;
+#' (3) the percentage of noise in the data increases.
+#' 
 #' @param dat Data matrix or data.frame of data points on the sphere to be 
-#'            clustered. The observations in dat are normalized to ensure that
-#'            they lie on the d-simensional sphere. Note that d > 1.
+#'            clustered. The observations in \code{dat} are normalized by 
+#'            dividing with the length of the vector to ensure
+#'            that they lie on the \eqn{d}-dimensional sphere. Note that 
+#'            \eqn{d > 1}.
 #' @param nClust Number of clusters. It can be a single value or a numeric 
 #'               vector.
 #' @param maxIter The maximum number of iterations before a run is terminated.
 #' @param stoppingRule String describing the stopping rule to be used within 
-#'                     each run. Currently must be either: 
-#'                \code{'max'} (until the change in the log-likelihood is less 
-#'                than a given threshold (1e-7)), 
-#'                \code{'membership'} (until the membership is unchanged), or 
-#'                \code{'loglik'} (based on a maximum number of iterations).
+#'                     each run. Currently must be either \code{'max'}, 
+#'                     \code{'membership'}, or \code{'loglik'}.
 #' @param initMethod String describing the initialization method to be used.
 #'                   Currently must be \code{'sampleData'}.
-#' @param numInit Number of initializations.
+#' @param numInit Number of initialization.
 #'
-#' @details The function estimates the parameter of a mixture of Poisson
-#' kernel-based densities. The obtained estimates are used for assigning final 
-#' memberships, identifying the \code{nClust} clusters.
+#' @details 
+#' We set all concentration parameters equal to 0.5 and all mixing proportions
+#' to be equal. \cr
+#' The initialization method \code{'sampleData'} indicates that observation 
+#' points are randomly chosen as initializers of the centroids \eqn{\mu_j}.
+#' This random starts strategy has a chance of not obtaining initial 
+#' representatives from the underlying clusters, then the clustering is 
+#' performed \code{numInit} times and the random start with the highest
+#' likelihood is chosen as the final estimate of the parameters.
+#' 
+#' The possible \code{stoppingRule} for each iteration are: \cr
+#' - \code{'loglik'} run the algorithm until the change in log-likelihood from 
+#' one iteration to the next is less than a given threshold (1e-7) \cr
+#' - \code{'membership'} run the algorithm until the membership is unchanged for
+#' all points from one iteration to the next \cr
+#' - \code{'max'} reach a maximum number of iterations \code{maxIter}
+#' 
+#' The obtained estimates are used for assigning final memberships, identifying
+#' the \code{nClust} clusters, according to the following rule
+#' \deqn{P(x_i, \Theta) = \arg\max_{j \in \{1, \ldots, k\}} \{ \frac{\alpha_j 
+#' f_j(x_i|\mu_j, \rho_j)}{f(x_i, \Theta)}\}.}
+#' The number of clusters \code{nClust} must be provided as input to the
+#' clustering algorithm.
+#' 
+#' @seealso [dpkb()] and [rpkb()] for more information on the Poisson 
+#'          kernel-based distribution. \cr
+#'          \linkS4class{pkbc} for the class definition.
+#'          
+#' @note
+#' The clustering algorithm is tailored for data points on the sphere
+#' \eqn{\mathcal{S}^{d-1}}, but it can also be performed on spherically
+#' transformed observations, i.e. data points on the Euclidean space 
+#' \eqn{\mathbb{R}^d} that are normalized such that they lie on the 
+#' corresponding \eqn{d}-dimensional sphere \eqn{\mathcal{S}^{d-1}}.
 #'
 #' @return An S4 object of class \code{pkbc} containing the results of the 
 #' clustering procedure based on Poisson kernel-based distributions. The object 
@@ -53,9 +99,9 @@
 #'   \code{input}: List of input information.
 #'
 #' @references
-#' Golzy, M., Markatou, M. (2020) Poisson Kernel-Based Clustering on the Sphere:
-#' Convergence Properties, Identifiability, and a Method of Sampling, Journal of
-#' Computational and Graphical Statistics, 29:4, 758-770, 
+#' Golzy, M. and Markatou, M. (2020) Poisson Kernel-Based Clustering on the 
+#' Sphere: Convergence Properties, Identifiability, and a Method of Sampling, 
+#' Journal of Computational and Graphical Statistics, 29:4, 758-770, 
 #' DOI: 10.1080/10618600.2020.1740713.
 #'
 #' @examples
@@ -65,13 +111,14 @@
 #' groups<-c(rep(1, size), rep(2, size),rep(3,size))
 #' rho<-0.8
 #' set.seed(081423)
-#' data1<-rpkb(size, c(1,0,0),rho,method="rejvmf")
-#' data2<-rpkb(size, c(0,1,0),rho,method="rejvmf")
-#' data3<-rpkb(size, c(0,0,1),rho,method="rejvmf")
+#' data1<-rpkb(size, c(1,0,0),rho)
+#' data2<-rpkb(size, c(0,1,0),rho)
+#' data3<-rpkb(size, c(0,0,1),rho)
 #' dat<-rbind(data1$x,data2$x, data3$x)
 #'
 #' #Perform the clustering algorithm with number of clusters k=3.
-#' pkbd<- pkbc(dat, 3)
+#' pkbd<- pkbc(dat=dat, nClust=3)
+#' show(pkbd)
 #'
 #' @srrstats {G2.0a} Documentation of input nClust
 #' @srrstats {G1.3} description of parameter
@@ -82,11 +129,11 @@
 #' @srrstats {UL1.4} assumptions are taken into consideration
 #' 
 #' @export
-setGeneric("pkbc",function(dat,
-                           nClust=NULL,
+setGeneric("pkbc",function(dat, 
+                           nClust = NULL,
                            maxIter = 300,
-                           stoppingRule = 'loglik',
-                           initMethod = 'sampleData',
+                           stoppingRule = "loglik",
+                           initMethod = "sampleData",
                            numInit = 10){
    
    standardGeneric("pkbc")
@@ -108,20 +155,20 @@ setGeneric("pkbc",function(dat,
 #' @export
 setMethod("pkbc", signature(dat = "ANY"),
     function(dat,
-             nClust=NULL,
+             nClust = NULL,
              maxIter = 300,
-             stoppingRule = 'loglik',
-             initMethod = 'sampleData',
+             stoppingRule = "loglik",
+             initMethod = "sampleData",
              numInit = 10){
        # Constant defining threshold by which log likelihood must change 
        # to continue iterations, if applicable.
        LL_TOL <- 1e-7
        
        # validate input
-       if(is.null(nClust)){
+       if(is.null(nClust)) {
           stop("Input parameter nClust is required. Provide one specific 
                value or a set of possible values.")
-       } else if(is.vector(nClust) & is.numeric(nClust)){
+       } else if(is.vector(nClust) & is.numeric(nClust)) {
           if(any(nClust < 1)){
              stop('Values in the input parameter nClust must be 
                   greater than 0')
@@ -131,34 +178,34 @@ setMethod("pkbc", signature(dat = "ANY"),
                   values")
        }
        if (maxIter < 1) {
-          stop('Input parameter maxIter must be greater than 0')
+          stop("Input parameter maxIter must be greater than 0")
        }
-       if ( !(stoppingRule %in% c('max', 'membership', 'loglik')) ) {
-          stop(paste('Unrecognized value "', stoppingRule, '" in input 
-          parameter stoppingRule.', sep=''))
+       if ( !(stoppingRule %in% c("max", "membership", "loglik")) ) {
+          stop(paste("Unrecognized value ", stoppingRule, " in input 
+          parameter stoppingRule.", sep=''))
        }
-       if ( !(initMethod %in% c('sampleData')) ) {
-          stop(paste('Unrecognized value "', initMethod, '" in input 
-          parameter initMethod.', sep=''))
+       if (!(initMethod %in% c("sampleData"))) {
+          stop(paste("Unrecognized value ", initMethod, " in input 
+          parameter initMethod.", sep=''))
        }
        if (numInit < 1) {
-          stop('Input parameter numInit must be greater than 0')
+          stop("Input parameter numInit must be greater than 0")
        }
        
        # set options for stopping rule
-       checkMembership <- stoppingRule == 'membership'
-       checkLoglik <- stoppingRule == 'loglik'
+       checkMembership <- stoppingRule == "membership"
+       checkLoglik <- stoppingRule == "loglik"
        
        if(is.data.frame(dat)){
           dat <- as.matrix(dat)
        } else if(!is.matrix(dat)){
           stop("dat must be a matrix or a data.frame")
        }
-       if(!is.numeric(dat)){
+       if(!is.numeric(dat)) {
           stop("dat must be a numeric matrix or data.frame")
        }
        
-       if(any(is.na(dat))){
+       if(any(is.na(dat))) {
           stop("There are missing values in the data set!")
        } else if(any(is.infinite(dat) |is.nan(dat))){
           stop("There are undefined values, that is Nan, Inf, -Inf")
@@ -178,14 +225,14 @@ setMethod("pkbc", signature(dat = "ANY"),
           alpha_best <- rep(-99, numClust)
           rho_best <- rep(-99, numClust)
           mu_best <- matrix(nrow = numClust, ncol = numVar)
-          normprobMat_best <- matrix(-99,nrow=numData, ncol=numClust)
-          if (initMethod == 'sampleData') {
+          normprobMat_best <- matrix(-99, nrow=numData, ncol=numClust)
+          if (initMethod == "sampleData") {
              uniqueData <- unique(dat)
              numUniqueObs <- nrow(uniqueData)
              if (numUniqueObs < numClust) {
-                stop(paste('Only', numUniqueObs, 'unique observations.',
+                stop(paste("Only", numUniqueObs, "unique observations.",
                            'When initMethod = "sampleData", must have more
-                           than numClust unique observations.'
+                           than nClust unique observations.'
                 ))
              }
           }
@@ -425,12 +472,15 @@ setMethod("show", "pkbc", function(object) {
 #' res <- pkbc(dat,2:4)
 #' summary(res)
 #' 
-#' @seealso [pkbc()]
+#' @seealso [pkbc()] for the clustering algorithm \cr
+#'          \linkS4class{pkbc} for the class object definition. 
 #'
 #' @srrstats {G1.4} roxigen2 is used
 #' @srrstats {UL4.4} summary method for pkbc object
 #' 
+#' @name summary.pkbc
 #' @rdname summary.pkbc
+#' @aliases summary,pkbc-method
 #' @export
 setMethod("summary", "pkbc", function(object) {
    cat("Poisson Kernel-Based Clustering on the Sphere (pkbc) Results\n")
@@ -474,6 +524,9 @@ setMethod("summary", "pkbc", function(object) {
 #' @param object Object 
 #' @param ... possible additional inputs
 #' 
+#' @seealso [pkbc()] for the clustering algorithm \cr
+#'          \linkS4class{pkbc} for the class object definition.
+#'          
 #' @export
 setGeneric("stats_clusters",function(object,...){
    
@@ -488,7 +541,8 @@ setGeneric("stats_clusters",function(object,...){
 #' @param object Object of class \code{pkbc}.
 #' @param k Number of clusters to be used.
 #'
-#' @details The function computes mean, standard deviation, median, 
+#' @details 
+#' The function computes mean, standard deviation, median, 
 #' inter-quantile range, minimum and maximum for each variable in the data set 
 #' given the final membership assigned by the clustering algorithm. 
 #' 
@@ -502,7 +556,7 @@ setGeneric("stats_clusters",function(object,...){
 #' stats_clusters(pkbc_res, 3)
 #' 
 #'
-#' @return List with computed descriptive statistics for each variable. 
+#' @return List with computed descriptive statistics for each dimension. 
 #'
 #'
 #' @srrstats {G1.4} roxigen2 is used
@@ -514,16 +568,18 @@ setGeneric("stats_clusters",function(object,...){
 #' @importFrom stats median
 #' @importFrom stats IQR 
 #' 
-#' @rdname stats_clusters                  
+#' @name stats_clusters
+#' @rdname stats_clusters 
+#' @aliases stats_clusters,pkbc-method                 
 #' @export
 setMethod("stats_clusters", "pkbc", function(object, k){
    
-   if(!(k %in% object@input$nClust)){
+   if(!(is.numeric(k) & length(k)==1)){
+      stop("k must be an integer")
+   } else if(!(k %in% object@input$nClust)){
       stop("The provided pkbc object does not contain results for the requested
            number of clusters")
-   } else if(!(is.numeric(k) & length(k)==1)){
-      stop("k must be an integer")
-   }
+   } 
    
    x <- object@input$dat
    y <- as.factor(object@res_k[[k]]$finalMemb)
@@ -548,7 +604,7 @@ setMethod("stats_clusters", "pkbc", function(object, k){
    
    return(metrics)
 })
-#' @rdname plot.pkbc
+#' 
 #' 
 #' @title Plotting method for Poisson kernel-based clustering
 #' 
@@ -556,83 +612,74 @@ setMethod("stats_clusters", "pkbc", function(object, k){
 #' Plots for a pkbc object.
 #'  
 #' @param x Object of class \code{pkbc}
+#' @param ... Additional arguments that can be passed to the plot function
+#' @param k number of considered clusters. If it is not provided the scatter 
+#'          plot is displayed for each value of number of clusters present in 
+#'          the \code{x} object 
 #' @param true_label factor or vector of true membership to clusters (if 
 #'                   available). It must have the same length of final 
 #'                   memberships.
-#' @param pca_res Logical. If TRUE the results from PCALocantore when dimension
-#'                is greater than 3 are also reported. 
+#' @param pca_res Logical. If TRUE the results from PCALocantore are also 
+#'                reported (when dimension is greater than 3). 
 #'
 #' @details 
 #' - scatterplot: If dimension is equal to 2 or 3, points are displayed on the 
 #' circle and sphere, respectively. If dimension if greater than 3, the 
-#' spherical Principal Component procedure proposed by Locantore et al., (1999)
+#' spherical Principal Component procedure proposed by Locantore et al. (1999),
 #' is applied for dimensionality reduction and the first three principal
 #' components are normalized and displayed on the sphere. For d > 3, the
 #' complete results from the \code{PcaLocantore} function (package \code{rrcov})
-#' are returned if pca_res=TRUE.
+#' are returned if \code{pca_res=TRUE}.
 #' - elbow plot: the within cluster sum of squares (wcss) is computed using the 
-#' Euclidean distance and the cosine similarity. 
+#' Euclidean distance (left) and the cosine similarity (right). 
+#' 
+#' @note
+#' The elbow plot is commonly used as a graphical method for choosing the
+#' *appropriate* number of clusters. Specifically, plotting the wcss versus the
+#' number of clusters, the suggested number of clusters correspond to the point
+#' in which the plotted line has the greatest change in slope, showing 
+#' an elbow.  
+#' 
+#' @seealso [pkbc()] for the clustering algorithm \cr
+#'          \linkS4class{pkbc} for the class object definition.
 #' 
 #' @examples
-#' \donttest{
 #' dat<-matrix(rnorm(300),ncol=3)
 #' pkbc_res<- pkbc(dat, 3)
-#' stats_clusters(pkbc_res, 3)
-#' }
+#' plot(pkbc_res, 3)
 #' 
 #' @references
 #' Locantore, N., Marron, J.S., Simpson, D.G. et al. (1999) "Robust principal 
 #' component analysis for functional data." Test 8, 1–73. 
 #' https://doi.org/10.1007/BF02595862
 #' 
-#' @return One of the following plot:
-#' - scatterplot of data points colored by final membership
-#' - elbow plot
 #' 
 #' @srrstats {UL6.1} this function includes a plot method
 #' @srrstats {UL6.0,UL6.2} plot method for pkbc object
 #' 
+#' @name plot.pkbc
+#' @rdname plot.pkbc
+#' @aliases plot.pkbc
+#' @aliases plot,pkbc,ANY-method
+#' @return The scatter-plot(s) and the elbow plot.
+#' 
 #' @export
-setMethod("plot", signature(x="pkbc"), 
-          function(x, true_label=NULL, pca_res=FALSE) {
-repeat {
-   # Display plot options
-   cat("Select a plot option:\n")
-   cat("0: Exit\n")
-   cat("1: Scatterplot\n")
-   cat("2: Elbow plot\n")
-   
-   # Read user choice
-   choice <- as.integer(readline(prompt="Enter your choice: "))
-   
-   # Check for exit condition
-   if (choice == 0) {
-      cat("Exiting plot menu.\n")
-      break
-   }
-   
-   # Validate input
-   if (choice %in% c(1,2)) {
-      if (choice == 1) {
-         
-   k <- as.integer(readline(prompt="Enter the number of clusters to display: "))
+setMethod("plot", c(x = "pkbc"), 
+          function(x, k = NULL, true_label=NULL, pca_res=FALSE, ...) {
+             
+             if(is.null(k)){
+                for (k in x@input$nClust) {
+                   
+                   scatterplotMethod(x, k, true_label, pca_res)
+                }
+             } else {
+                
+                scatterplotMethod(x, k, true_label, pca_res)
+             }
+             
+             # Elbow plot
+             elbowMethod(x)
 
-         if(k %in% x@input$nClust){
-            
-            # Call the scatterplot function
-            scatterplotMethod(x, k, true_label,pca_res)
-         } else {
-            cat("Invalid number of clusters. Please try again.\n")
-         }
-      } else if(choice == 2){
-         
-         elbowMethod(x)
-         
-      }
-   } else {
-      cat("Invalid choice. Please try again.\n")
-   }
-}
 })
 #' Scatter-plot of data points colored by the final membership.
 #' 
@@ -655,101 +702,123 @@ repeat {
 #' the \code{PcaLocantore} function (package \code{rrcov}) are returned if 
 #' pca_res=TRUE.
 #' 
-#' @importFrom rgl plot3d
-#' @importFrom rgl layout3d
-#' @importFrom rgl title3d
-#' @importFrom rgl next3d
-#' @importFrom rgl rgl.spheres
-#' @importFrom rgl open3d
+#' @importFrom scatterplot3d scatterplot3d
+#' @importFrom grDevices rainbow
+#' @importFrom graphics legend
+#' @importFrom graphics par
 #' @import ggplot2
-#' @importFrom grDevices colorRampPalette
 #' @importFrom rrcov PcaLocantore
 #' 
 #' @srrstats {G1.4} roxigen2 is used
 #' 
 #' @keywords internal
 #' @noRd
-scatterplotMethod <- function(object, k, true_label=NULL, pca_res=FALSE) {
+scatterplotMethod <- function(object, k, true_label = NULL, pca_res = FALSE) {
    x <- object@input$dat
    y <- as.factor(object@res_k[[k]]$finalMemb)
+   
    if (ncol(x) == 2) {
-      
+      # 2D Scatter plot using ggplot2
       df <- data.frame(V1 = x[,1], V2 = x[,2], clusters = as.factor(y))
-      with(df, {pl <- ggplot(df, aes(x = V1, y = V2, color = clusters)) +
-         geom_point() +
-         theme_minimal() +
-         labs(color = "Cluster") 
-      print(pl)})
+      with(df, {
+         pl <- ggplot(df, aes(x = V1, y = V2, color = clusters)) +
+            geom_point(size = 2) +  # Smaller points
+            theme_minimal() +
+            labs(color = "Cluster") +
+            theme(legend.position = "right")  # Add legend
+         print(pl)
+      })
       
    } else if (ncol(x) == 3) {
+      # Define layout for two plots side by side if true_label is provided
+      if (!is.null(true_label)) {
+         par(mfrow = c(1, 2), mar = c(3, 3, 2, 1) + 0.1, oma = c(0, 0, 0, 0))  
+      }
       
-      if(!is.null(true_label)){
+      # 3D Scatter plot for clustering result
+      colors <- rainbow(length(unique(y)))
+      color_labels <- colors[as.numeric(y)]
+      
+      s3d <- scatterplot3d(x[,1], x[,2], x[,3], color = color_labels, pch = 16, 
+                           cex.symbols = 0.7, main = "Final Membership", 
+                           xlab = "X", ylab = "Y", zlab = "Z",
+                           xlim = range(x[,1]), ylim = range(x[,2]), 
+                           zlim = range(x[,3]))
+      
+      legend("topright", legend = levels(y), col = colors, pch = 16, 
+             pt.cex = 1.2, cex = 0.5, bty = "n", title = "Clusters")
+      
+      # If true labels are provided, plot them in a separate panel
+      if (!is.null(true_label)) {
+         colors_true <- rainbow(length(unique(true_label)))
+         color_labels_true <- colors_true[as.numeric(true_label)]
          
-         my_palette <- colorRampPalette(c("orange","blue", "green", "red")) 
-         col_pal <- my_palette(k*2)
-         layout3d(matrix(1:2, ncol = 2))
+         s3d_true <- scatterplot3d(x[,1], x[,2], x[,3], 
+                                   color = color_labels_true, pch = 16, 
+                                   cex.symbols = 0.7,
+                                   main = "True Labels", xlab = "X", 
+                                   ylab = "Y", zlab = "Z",
+                                   xlim = range(x[,1]), ylim = range(x[,2]), 
+                                   zlim = range(x[,3]))
          
-         next3d()
-         plot3d(x[,1], x[,2], x[,3], col = col_pal[y], size = 4)
-         title3d("Final membership", font=2,line = 7, cex = 3)
-         rgl.spheres(0, col = "transparent", alpha = 0.2)
-         
-         next3d()
-         plot3d(x[,1], x[,2], x[,3], col = col_pal[true_label+k], size = 4)
-         title3d("True label", line = 7, cex = 3, font=2)
-         rgl.spheres(0 , col = "transparent", alpha = 0.2)
-         
-      } else {
-         
-         open3d()
-         plot3d(x[,1], x[,2], x[,3], col = y, size = 4)
-         rgl.spheres(0, col = "transparent", alpha = 0.2)
-         
+         legend("topright", legend = levels(as.factor(true_label)), 
+                col = colors_true, pch = 16, pt.cex = 1.2, cex = 0.5, 
+                bty = "n", title = "True Labels")
+      }
+      
+      # Reset layout if it was changed
+      if (!is.null(true_label)) {
+         par(mfrow = c(1, 1))  # Reset layout
       }
       
    } else {
-      
+      # For data with more than 3 dimensions, perform PCA and plot the 
+      # first 3 components
       pca_result <- PcaLocantore(x)
       pca_data <- data.frame(PC1 = pca_result@scores[,1], 
                              PC2 = pca_result@scores[,2], 
                              PC3 = pca_result@scores[,3])
-      pca_data <- pca_data/sqrt(rowSums(pca_data^2))
+      pca_data <- pca_data / sqrt(rowSums(pca_data^2))
       pca_data <- data.frame(pca_data, Cluster = y)
       
-      
-      my_palette <- colorRampPalette(c("orange","blue", "green", "red"))
-      col_pal <- my_palette(k*2)
-      col_pal <- sample(col_pal, length(col_pal), replace=FALSE)
-      
-      if(is.null(true_label)){
-         open3d()
-         plot3d(pca_data$PC1, pca_data$PC2, pca_data$PC3, col = col_pal[y], 
-                size = 4, xlab="PC1", ylab="PC2", zlab="PC3")
-         title3d("Final membership", line = 7, cex = 3, font=2)
-         rgl.spheres(0, col = "transparent", alpha = 0.2)
-         
-      } else {
-         
-         layout3d(matrix(1:2, ncol = 2))
-         next3d()
-         plot3d(pca_data$PC1, pca_data$PC2, pca_data$PC3, col = col_pal[y], 
-                size = 4, xlab="PC1", ylab="PC2", zlab="PC3")
-         title3d("Final membership", line = 7, cex = 3, font=2)
-         rgl.spheres(0, col = "transparent", alpha = 0.2)
-         
-         next3d()
-         plot3d(pca_data$PC1, pca_data$PC2, pca_data$PC3, 
-                col = col_pal[true_label+k], size = 4, 
-                xlab="PC1", ylab="PC2", zlab="PC3") 
-         title3d("True label", line = 7, cex = 3, font=2)
-         rgl.spheres(0, col = "transparent", alpha = 0.2)
-         
+      if (!is.null(true_label)) {
+         par(mfrow = c(1, 2), mar = c(3, 3, 2, 1) + 0.1, oma = c(0, 0, 0, 0)) 
       }
       
-      if(pca_res){
+      colors <- rainbow(length(unique(y)))
+      color_labels <- colors[as.numeric(pca_data$Cluster)]
+      
+      s3d <- scatterplot3d(pca_data$PC1, pca_data$PC2, pca_data$PC3, 
+                           color = color_labels, pch = 16, cex.symbols = 0.7,
+                           main = "Final Membership", xlab = "PC1", 
+                           ylab = "PC2", zlab = "PC3")
+      
+      legend("topright", legend = levels(y), col = colors, pch = 16, 
+             pt.cex = 1.2, cex = 0.5, bty = "n", title = "Clusters")
+      
+      if (!is.null(true_label)) {
+         colors_true <- rainbow(length(unique(true_label)))
+         color_labels_true <- colors_true[as.numeric(true_label)]
+         
+         s3d_true <- scatterplot3d(pca_data$PC1, pca_data$PC2, pca_data$PC3, 
+                                   color = color_labels_true, pch = 16, 
+                                   cex.symbols = 0.7,
+                                   main = "True Labels", xlab = "PC1", 
+                                   ylab = "PC2", zlab = "PC3")
+         
+         legend("topright", legend = levels(as.factor(true_label)), 
+                col = colors_true, pch = 16, pt.cex = 1.2, cex = 0.5, 
+                bty = "n", title = "True Labels")
+      }
+      
+      if (pca_res) {
          return(pca_result)
       }
       
+      # Reset layout if it was changed
+      if (!is.null(true_label)) {
+         par(mfrow = c(1, 1))  # Reset layout
+      }
    }
 }
 #'
@@ -785,7 +854,7 @@ elbowMethod <- function(object){
    pl <- ggplot(wcss_values, aes(x = k, y = wcss)) +
       geom_line() +
       geom_point() +
-      labs(title = "Elbow Plot", x = "Number of clusters", 
+      labs(title = "Euclidean", x = "Number of clusters", 
            y = "Within-cluster sum of squares (WCSS)") +
       theme_minimal()
    
@@ -793,7 +862,7 @@ elbowMethod <- function(object){
    pl_cos <- ggplot(wcss_values, aes(x = k, y = wcss)) +
       geom_line() +
       geom_point() +
-      labs(title = "Elbow Plot", x = "Number of clusters", 
+      labs(title = "Cosine Similarity", x = "Number of clusters", 
            y = "Within-cluster sum of squares (WCSS)") +
       theme_minimal()
    
@@ -801,10 +870,13 @@ elbowMethod <- function(object){
    print(fig)
 
 }
-#' Cluster spherical observations by mixture of Poisson kernel-based densities
+#' @title
+#' Cluster spherical observations using a mixture of Poisson kernel-based 
+#' densities
 #' 
-#' Cluster spherical observations based on mixture of Poisson kernel-based 
-#' densities estimated by \code{pkbc}
+#' @description
+#' Obtain predictions of membership for spherical observations based on a 
+#' mixture of Poisson kernel-based densities estimated by \code{pkbc}
 #' 
 #' @param object Object of class \code{pkbc}
 #' @param k Number of clusters to be used.
@@ -830,13 +902,15 @@ elbowMethod <- function(object){
 #' newdat <- rbind(matrix(rnorm(10),ncol=2),matrix(rnorm(10,5),ncol=2))
 #' predict(res, k=2, newdat)
 #'  
-#' @seealso [pkbc()]
+#' @seealso [pkbc()] for the clustering algorithm \cr
+#'          \linkS4class{pkbc} for the class object definition.
 #' 
 #' @srrstats {G1.a} roxygen2 is used
 #' @srrstats {UL3.3} prediction function for pkbc object
 #' 
+#' @name predict.pkbc
 #' @rdname predict.pkbc
-#' 
+#' @aliases predict,pkbc-method
 #' @export
 setMethod("predict", signature(object="pkbc"), 
           function(object, k, newdata=NULL){
@@ -852,6 +926,10 @@ setMethod("predict", signature(object="pkbc"),
       newdata <- as.matrix(newdata)
    }
    
+   if(!is.numeric(newdata)){
+      stop("newdata must be numeric")
+   }
+             
    # Ensure that x has the same number of columns as the training data
    if (ncol(newdata) != ncol(object@input$dat)) {
    stop("newdata must have the same number of variables as the training data.")
@@ -905,26 +983,69 @@ setMethod("predict", signature(object="pkbc"),
 #'
 #' Method for objects of class \code{pkbc} which computes evaluation measures 
 #' for clustering results.
+#' The following evaluation measures are computed: 
+#' In-Group Proportion (Kapp and Tibshirani (2007)). If true label are 
+#' provided, ARI, Average Silhouette Width (Rousseeuw (1987)), Macro-Precision 
+#' and Macro-Recall are computed.
 #'
 #' @param object Object of class \code{pkbc}
 #' @param true_label factor or vector of true membership to clusters (if 
 #'                   available). It must have the same length of final 
 #'                   memberships.
-#' @param h Tuning parameter of the k-sample test. (default: 1.5)
 #'
-#' @details The following evaluation measures are computed: 
-#'  In-Group Proportion. If true label are provided, ARI, Average
-#'  Silhouette Width, Macro-Precision and Macro-Recall are computed.
+#' @details   
+#' The IGP is a statistical measure that quantifies the proportion of 
+#' observations within a group that belong to the same predefined category or 
+#' class. It is often used to assess the homogeneity of a group by evaluating 
+#' how many of its members share the same label. A higher IGP indicates that the
+#' group is more cohesive, while a lower proportion suggests greater diversity 
+#' or misclassification within the group (Kapp and Tibshirani 2007).
+#' 
+#' The Adjusted Rand Index (ARI) is a statistical measure used in data 
+#' clustering analysis. It quantifies the similarity between two partitions of 
+#' a dataset by comparing the assignments of data points to clusters. The ARI 
+#' value ranges from 0 to 1, where a value of 1 indicates a perfect match 
+#' between the partitions and a value close to 0 indicates a random assignment 
+#' of data points to clusters.
+#' 
+#' Each cluster can represented by a so-called silhouette which is based on the
+#' comparison of its tightness and separation. The average silhouette width 
+#' provides an evaluation of clustering validity, and might be used to select 
+#' an *appropriate* number of clusters (Rousseeuw 1987). 
+#' 
+#' Macro Precision is a metric used in multi-class classification that 
+#' calculates the precision for each class independently and then takes the 
+#' average of these values. Precision for a class is defined as the proportion 
+#' of true positive predictions out of all predictions made for that class. 
+#' 
+#' Macro Recall is similar to Macro Precision but focuses on recall. Recall for 
+#' a class is the proportion of true positive predictions out of all actual 
+#' instances of that class. Macro Recall is the average of the recall values 
+#' computed for each class.
 #'
+#' @note
+#' Note that Macro Precision and Macro Recall depend on the assigned labels, 
+#' while the ARI measures the similarity between partition up to label 
+#' switching.   
+#' 
+#' If the required packages (`mclust` for ARI, `clusterRepro` for IGP, and
+#' `cluster` for ASW) are not installed, the function will display a message
+#' asking the user to install the missing package(s).
+#' 
 #' @return List with the following components:
 #' \itemize{
-#'    \item \code{metrics} Table of computed evaluation measures.
+#'    \item \code{metrics} Table of computed evaluation measures for each value
+#'                         of number of clusters in the \code{pkbc} object. The
+#'                         number of cluster is indicated as column name. 
 #'    \item \code{IGP} List of in-group proportions for each value of number of 
 #'                     clusters specified.
 #' }
+#' 
+#' @seealso [pkbc()] for the clustering algorithm \cr
+#'          \linkS4class{pkbc} for the class object definition.
 #'
 #' @references
-#' Kapp, A.V., Tibshirani, R. (2007) "Are clusters found in one dataset present 
+#' Kapp, A.V. and Tibshirani, R. (2007) "Are clusters found in one dataset present 
 #' in another dataset?", Biostatistics, 8(1), 9–31, 
 #' https://doi.org/10.1093/biostatistics/kxj029
 #' 
@@ -932,15 +1053,13 @@ setMethod("predict", signature(object="pkbc"),
 #' validation of cluster analysis. Journal of Computational and Applied 
 #' Mathematics, 20, 53–65.
 #'
-#' @importFrom mclust adjustedRandIndex
-#' @importFrom clusterRepro IGP.clusterRepro
-#' @importFrom cluster silhouette
 #' @importFrom stats dist
+#' @importFrom utils install.packages
 #'
 #' @examples
 #' #We generate three samples of 100 observations from 3-dimensional
 #' #Poisson kernel-based densities with rho=0.8 and different mean directions
-#' \donttest{
+#' 
 #' size<-20
 #' groups<-c(rep(1, size), rep(2, size),rep(3,size))
 #' rho<-0.8
@@ -951,16 +1070,51 @@ setMethod("predict", signature(object="pkbc"),
 #' data<-rbind(data1$x,data2$x, data3$x)
 #'
 #' #Perform the clustering algorithm
-#' pkbc_res<- pkbc(data, 2:4)
+#' pkbc_res<- pkbc(data, 3)
 #' pkbc_validation(pkbc_res)
-#' }
+#' 
 #' 
 #' @srrstats {G1.4} roxigen2 is used
 #' @srrstats {G2.0, G2.0a, G2.1, G2.1a,G2.2} input true_label
 #' @srrstats {UL3.2} true label can be provided as a separate input 
 #' 
 #' @export
-pkbc_validation <- function(object, true_label=NULL, h=1.5){
+pkbc_validation <- function(object, true_label=NULL){
+   
+   # nocov start
+   if (!requireNamespace("mclust", quietly = TRUE)) {
+      install <- readline(prompt = "'mclust' is required for ARI. Would you 
+                          like to install it now? (yes/no): ")
+      if (tolower(install) == "yes") {
+         install.packages("mclust")
+      } else {
+         message("ARI will not be computed without 'mclust'.")
+         return(NULL)
+      }
+   }
+   
+   if (!requireNamespace("cluster", quietly = TRUE)) {
+      install <- readline(prompt = "'cluster' is required for ASW. Would you 
+                          like to install it now? (yes/no): ")
+      if (tolower(install) == "yes") {
+         install.packages("cluster")
+      } else {
+         message("ASW will not be computed without 'cluster'.")
+         return(NULL)
+      }
+   }
+   
+   if (!requireNamespace("clusterRepro", quietly = TRUE)) {
+      install <- readline(prompt = "'clusterRepro' is required for IGP. 
+                           Would you like to install it now? (yes/no): ")
+      if (tolower(install) == "yes") {
+         install.packages("clusterRepro")
+      } else {
+         message("IGP will not be computed without 'clusterRepro'.")
+         return(NULL)
+      }
+   }
+   # nocov end
    
    x <- object@input$dat
    x <- x/sqrt(rowSums(x^2))
@@ -977,9 +1131,9 @@ pkbc_validation <- function(object, true_label=NULL, h=1.5){
    
    #test_res <- matrix(nrow = 4)
    if(is.null(true_label)){
-      metrics <- matrix(nrow=2)
+      metrics <- matrix(nrow=1)
    } else {
-      metrics <- matrix(nrow=5)
+      metrics <- matrix(nrow=4)
    }
    igp_k <- list()
    
@@ -988,24 +1142,21 @@ pkbc_validation <- function(object, true_label=NULL, h=1.5){
       
       # Compute the In-Group Proportion
       if(k>1){
-         igp_k[[k]] <- IGP.clusterRepro(as.data.frame(t(x)), 
+         igp_k[[k]] <- clusterRepro::IGP.clusterRepro(as.data.frame(t(x)), 
                               as.data.frame(t(object@res_k[[k]]$params$mu)))$IGP
       }
-      # Compute the k-sample test
-      #y_k <- as.numeric(object@res_k[[k]]$finalMemb)
-      #k_test <- kb.test(x=x, y=y_k,h=h)
       
       # Compute the Average Silhouette Width
-      sil <- mean(silhouette(x =object@res_k[[k]]$finalMemb, dist =dist(x))[,3])
+      sil <- mean(cluster::silhouette(x =object@res_k[[k]]$finalMemb, 
+                                      dist =dist(x))[,3])
       
-     # test_res <- cbind(test_res, c(k, k_test@Un[1], k_test@CV_Un[1], 
-                               #   k_test@H0_Un[1]))
       
       # If true labels are provided
       if(!is.null(true_label)){
          
          # Compute the Adjusted Rand Index
-         ari <- adjustedRandIndex(object@res_k[[k]]$finalMemb, true_label)
+         ari <- mclust::adjustedRandIndex(object@res_k[[k]]$finalMemb, 
+                                          true_label)
          
          m <- max(length(unique(true_label)),
                   length(unique(object@res_k[[k]]$finalMemb)))
@@ -1026,36 +1177,30 @@ pkbc_validation <- function(object, true_label=NULL, h=1.5){
          macroPrecision <- mean(precision,na.rm=T)
          macroRecall <- mean(recall,na.rm=T)
          
-         metrics <- cbind(metrics, c(k, sil, ari, macroPrecision, 
+         metrics <- cbind(metrics, c(sil, ari, macroPrecision, 
                                      macroRecall))
       } else {
          ari <- NA
-         metrics <- cbind(metrics, c(k, sil))
+         metrics <- cbind(metrics, c(sil))
       }
       
    }
    metrics <- metrics[,-1]
-   #test_res <- test_res[,-1]
-   metrics <- as.data.frame(metrics,colnames=NULL)
-   #test_res <- as.data.frame(test_res, colnames=NULL)
-   #colnames(metrics) <- paste0("k=",object@input$nClust)
-   #rownames(test_res) <- c("k","Test statistic", "Critical value", 
-                        #  "Reject_H0")
+   if(is.null(true_label)){
+      metrics <- as.data.frame(matrix(metrics,nrow=1),colnames=NULL)
+   } else {
+      metrics <- as.data.frame(metrics,colnames=NULL)
+   }
+   
    if(!is.null(true_label)){
-      rownames(metrics) <- c("k","ASW", "ARI","Macro_Precision", 
+      rownames(metrics) <- c("ASW", "ARI","Macro_Precision", 
                              "Macro_Recall")
    } else {
-      rownames(metrics) <- c("k","ASW")
+      rownames(metrics) <- c("ASW")
    }
-   
+   colnames(metrics) <- object@input$nClust
 
    results <- list(metrics = metrics, IGP = igp_k)
-   #results <- list(metrics = metrics, IGP = igp_k, tests = test_res)
    
    return(results)
-}
-.onLoad <- function(libname, pkgname) {
-   if (Sys.getenv("RGL_USE_NULL") == "") {
-      Sys.setenv(RGL_USE_NULL = "TRUE")
-   }
 }

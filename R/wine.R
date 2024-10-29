@@ -33,12 +33,12 @@
 #' summary(wine)
 #'
 #' @source
-#' Aeberhard,Stefan and Forina,M.. (1991). Wine.
+#' Aeberhard, S. and Forina, M. (1991). Wine.
 #' UCI Machine Learning Repository. 
 #' https://doi.org/10.24432/C5PC7J.
 #'
 #' @references
-#' Aeberhard, S., Coomans, D., & De Vel, O. (1994). Comparative analysis of 
+#' Aeberhard, S., Coomans, D. and De Vel, O. (1994). Comparative analysis of 
 #' statistical pattern recognition methods in high dimensional settings. 
 #' Pattern Recognition, 27(8), 1065-1077.
 #' 
