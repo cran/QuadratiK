@@ -1,21 +1,23 @@
 ## ----eval = FALSE-------------------------------------------------------------
-#  install.packages("QuadratiK")
+# install.packages("QuadratiK")
 
 ## ----eval = FALSE-------------------------------------------------------------
-#  library(devtools)
-#  devtools::install_github('giovsaraceno/QuadratiK-package')
+# library(devtools)
+# install_github('ropensci/QuadratiK')
+# # or via the rOpenSci organization repository
+# install.packages("QuadratiK", repos = "https://ropensci.r-universe.dev")
 
 ## -----------------------------------------------------------------------------
 library(QuadratiK)
 
 ## ----eval=FALSE---------------------------------------------------------------
-#  ?kb.test
-#  ?select_h
+# ?kb.test
+# ?select_h
 
 ## -----------------------------------------------------------------------------
 x <- matrix(rnorm(100), ncol = 2)
 # Does x come from a multivariate standard normal distribution?
-kb.test(x, h=0.4)
+kb.test(x, h = 0.4)
 
 ## -----------------------------------------------------------------------------
 x <- matrix(rnorm(100,4), ncol = 2)
@@ -38,7 +40,7 @@ x <- rbind(x1, x2, x3)
 kb.test(x, y, h = 0.4)
 
 ## ----eval=FALSE---------------------------------------------------------------
-#  ?pk.test
+# ?pk.test
 
 ## -----------------------------------------------------------------------------
 # Generate points on the sphere from the uniform ditribution 
@@ -47,26 +49,26 @@ x <- sample_hypersphere(d = 3, n_points = 100)
 pk.test(x, rho = 0.7)
 
 ## ----eval=FALSE---------------------------------------------------------------
-#  ?dpkb
-#  ?rpkb
+# ?dpkb
+# ?rpkb
 
 ## -----------------------------------------------------------------------------
 mu <- c(1,0,0)
 rho <- 0.9
 x <- rpkb(n = 100, mu = mu, rho = rho)
-head(x$x)
-dens_x <- dpkb(x$x, mu = mu, rho = rho)
+head(x)
+dens_x <- dpkb(x, mu = mu, rho = rho)
 head(dens_x)
 
 ## ----eval=FALSE---------------------------------------------------------------
-#  ?pkbc
+# ?pkbc
 
 ## -----------------------------------------------------------------------------
 # Generate 3 samples from the PKBD with different location directions
 x1 <- rpkb(n = 100, mu = c(1,0,0), rho = rho)
 x2 <- rpkb(n = 100, mu = c(-1,0,0), rho = rho)
 x3 <- rpkb(n = 100, mu = c(0,0,1), rho = rho)
-x <- rbind(x1$x, x2$x, x3$x)
+x <- rbind(x1, x2, x3)
 # Perform the clustering algorithm
 # Serch for 2, 3 or 4 clusters
 cluster_res <- pkbc(dat = x, nClust = c(2, 3, 4))
@@ -75,7 +77,7 @@ summary(cluster_res)
 ## -----------------------------------------------------------------------------
 # Predict the membership of new data with respect to the clustering results
 x_new <- rpkb(n = 10, mu = c(1,0,0), rho = rho)
-memb_mew <- predict(cluster_res, k = 3, newdata = x_new$x)
+memb_mew <- predict(cluster_res, k = 3, newdata = x_new)
 memb_mew$Memb
 
 

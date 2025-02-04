@@ -222,23 +222,23 @@
 #'
 #' @examples
 #' # create a kb.test object
-#' x <- matrix(rnorm(100),ncol=2)
-#' y <- matrix(rnorm(100),ncol=2)
+#' x <- matrix(rnorm(100), ncol = 2)
+#' y <- matrix(rnorm(100), ncol = 2)
 #' 
 #' # Normality test
 #' my_test <- kb.test(x, h=0.5)
 #' my_test
 #' 
 #' # Two-sample test
-#' my_test <- kb.test(x,y,h=0.5, method="subsampling",b=0.9,
-#'                      centeringType = "Nonparam")
+#' my_test <- kb.test(x, y, h = 0.5, method = "subsampling", b = 0.9,
+#'                    centeringType = "Nonparam")
 #' my_test
 #' 
 #' # k-sample test
-#' z <- matrix(rnorm(100,2),ncol=2)
-#' dat <- rbind(x,y,z)
-#' group <- rep(c(1,2,3),each=50)
-#' my_test <- kb.test(x=dat,y=group,h=0.5, method="subsampling",b=0.9)
+#' z <- matrix(rnorm(100, 2), ncol = 2)
+#' dat <- rbind(x, y, z)
+#' group <- rep(c(1, 2, 3), each = 50)
+#' my_test <- kb.test(x = dat, y = group, h = 0.5, method = "subsampling", b = 0.9)
 #' my_test
 #'
 #' @import Rcpp
@@ -252,14 +252,12 @@
 #' @srrstats {G2.0a,G2.1,G2.3b} The code considers the different inputs
 #' 
 #' @export
-setGeneric("kb.test",function(x, y=NULL, h = NULL, method = "subsampling", 
+setGeneric("kb.test",function(x, y = NULL, h = NULL, method = "subsampling", 
                               B = 150, b = NULL, Quantile = 0.95, 
                               mu_hat = NULL, Sigma_hat = NULL, 
-                              centeringType="Nonparam", 
-                              K_threshold=10, alternative="skewness"){
-   
-   standardGeneric("kb.test")
-})
+                              centeringType = "Nonparam", 
+                              K_threshold = 10, alternative = "skewness")
+   standardGeneric("kb.test"))
 #' @rdname kb.test
 #' 
 #' @srrstats {G1.4} roxigen2 is used
@@ -517,7 +515,8 @@ setMethod("show", "kb.test",
 #' @seealso [kb.test()] and \linkS4class{kb.test} for more details.
 #'
 #' @importFrom ggpubr ggarrange
-#' @import ggplot2
+#' @importFrom ggplot2 ggplot geom_line theme_minimal geom_abline ggtitle
+#' @importFrom ggplot2 xlab ylab
 #'
 #'@examples
 #' # create a kb.test object

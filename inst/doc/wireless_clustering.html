@@ -366,14 +366,20 @@ indicates the class labels, from 1 to 4, indicating the different rooms.
 Notice that, the Wi-Fi signal strength is measured in dBm, decibel
 milliwatts, which is expressed as a negative value ranging from -100 to
 0. In total, we have 500 observations for each room.</p>
-<p>Given that Wi-Fi signal strength values are inherently bounded within
-a certain range, it is possible to consider the spherically transformed
-data points using <span class="math inline">\(L_2\)</span>
-normalization. This transformation maps the data onto the surface of a
-7-dimensional sphere, ensuring that each observation has a uniform
-length. By projecting the data onto this high-dimensional sphere, we can
-take advantage of spherical geometry, and consequently perform the
-proposed clustering algorithm.</p>
+<p>In many wireless applications, the relative signal strengths across
+routers are more relevant to the underlying spatial patterns and device
+positioning than the absolute magnitudes. Additionally, absolute signal
+strength can be affected by noise, device orientation or environmental
+factors. In this case, it is reasonable to consider the spherically
+transformed data points using L2 normalization. This transformation maps
+the data onto the surface of a 6-dimensional sphere, ensuring that each
+observation has a uniform length. Given that absolute signal strength is
+not critical to the research question, the spherical representation
+provides a meaningful and interpretable framework for studying the data
+set. In general, it is appropriate to consider spherically transformed
+data points when: (i) the absolute length of the measurements is
+irrelevant or too noisy; (ii) if we are more interested in the relative
+distributions (or angular relationships) between data points.</p>
 <p>We perform the clustering algorithm on the <code>wireless</code> data
 set. We consider the <span class="math inline">\(K= 3, 4, 5\)</span> as
 possible values for the number of clusters.</p>
@@ -381,7 +387,7 @@ possible values for the number of clusters.</p>
 <span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a>labels <span class="ot">&lt;-</span> wireless[,<span class="dv">8</span>]</span>
 <span id="cb3-3"><a href="#cb3-3" tabindex="-1"></a>wire_norm <span class="ot">&lt;-</span> wire<span class="sc">/</span><span class="fu">sqrt</span>(<span class="fu">rowSums</span>(wire<span class="sc">^</span><span class="dv">2</span>))</span>
 <span id="cb3-4"><a href="#cb3-4" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">2468</span>)</span>
-<span id="cb3-5"><a href="#cb3-5" tabindex="-1"></a>res_pk <span class="ot">&lt;-</span> <span class="fu">pkbc</span>(<span class="fu">as.matrix</span>(wire_norm),<span class="dv">3</span><span class="sc">:</span><span class="dv">5</span>)</span></code></pre></div>
+<span id="cb3-5"><a href="#cb3-5" tabindex="-1"></a>res_pk <span class="ot">&lt;-</span> <span class="fu">pkbc</span>(<span class="fu">as.matrix</span>(wire_norm), <span class="dv">3</span><span class="sc">:</span><span class="dv">5</span>)</span></code></pre></div>
 <p>The <code>pkbc</code> function creates an object of class
 <code>pkbc</code> containing the clustering results for each value of
 number of clusters considered.</p>
@@ -448,7 +454,7 @@ information with respect to the clustering results. In particular, the
 function provides mean, standard deviation, median, inter-quantile
 range, minimum and maximum computed for each variable, overall and by
 the assigned membership.</p>
-<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" tabindex="-1"></a>summary_clust <span class="ot">&lt;-</span> <span class="fu">stats_clusters</span>(res_pk,<span class="dv">4</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" tabindex="-1"></a>summary_clust <span class="ot">&lt;-</span> <span class="fu">stats_clusters</span>(res_pk, <span class="dv">4</span>)</span></code></pre></div>
 <div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" tabindex="-1"></a>summary_clust</span></code></pre></div>
 <pre><code>## [[1]]
 ##            Group 1     Group 2     Group 3     Group 4     Overall

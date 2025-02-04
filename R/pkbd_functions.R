@@ -3,7 +3,7 @@
 #' 
 #' @description 
 #' The Poisson kernel-based densities are based on the normalized Poisson kernel
-#' and are defined on the \eqn{d}-dimensional unit sphere. Given a vector 
+#' and are defined on the \eqn{(d-1)}-dimensional unit sphere. Given a vector 
 #' \eqn{\mathbf{\mu} \in \mathcal{S}^{d-1}}, where \eqn{\mathcal{S}^{d-1}= 
 #' \{x \in \mathbb{R}^d : ||x|| = 1\}}, and a parameter \eqn{\rho} such that 
 #' \eqn{0 < \rho < 1}, the probability density function of a \eqn{d}-variate 
@@ -26,13 +26,13 @@
 #' the \eqn{d}-dimensional projected normal distributions does not carry beyond 
 #' \eqn{d=2}.  
 #' Golzy and Markatou (2020) proposed an acceptance-rejection method for 
-#' simulating data from a PKBD using von Mises-Fisher envelops (\code{rejvmf} 
+#' simulating data from a PKBD using von Mises-Fisher envelopes (\code{rejvmf} 
 #' method). Furthermore Sablica, Hornik and Leydold (2023) proposed new ways for
-#' simulating from the PKBD, using angular central Gaussian envelops 
+#' simulating from the PKBD, using angular central Gaussian envelopes 
 #' (\code{rejacg}) or using the projected Saw distributions (\code{rejpsaw}).
 #'  
-#' @param x Matrix (or data.frame) of data point on the sphere 
-#'          \eqn{\mathcal{S}^{d-1}}, with \eqn{d \ge 2}.
+#' @param x \eqn{n \times d}-matrix (or data.frame) of \eqn{n} data point on the
+#'          sphere \eqn{\mathcal{S}^{d-1}}, with \eqn{d \ge 2}.
 #' @param mu Location parameter with same length as the rows of \code{x}.
 #' @param rho Concentration parameter, with \eqn{0 \le} \code{rho} \eqn{< 1}.
 #' @param logdens Logical; if 'TRUE', densities are returned in logarithmic
@@ -49,12 +49,12 @@
 #'
 #' @examples
 #' # Generate some data from pkbd density
-#' pkbd_dat <- rpkb(10, c(0.5,0), 0.5)
+#' pkbd_dat <- rpkb(10, c(0.5, 0), 0.5)
 #' 
 #' # Calculate the PKBD density values
-#' dens_val <- dpkb(pkbd_dat$x, c(0.5,0.5),0.5)
+#' dens_val <- dpkb(pkbd_dat, c(0.5, 0.5), 0.5)
 #'
-#' @srrstats {G1.4} roxigen2 is used
+#' @srrstats {G1.4} roxygen2 is used
 #' @srrstats {G2.0,G2.0a} check input mu 
 #' @srrstats {G2.7,G2.8} different input x
 #' @srrstats {G2.13,G2.14,G2.14a,G2.15,G2.16} error for NA, Nan, Inf, -Inf
@@ -113,9 +113,9 @@ dpkb <- function(x, mu, rho, logdens = FALSE) {
 #'          observations. The available methods are 
 #' \itemize{
 #'    \item \code{'rejvmf'} acceptance-rejection algorithm using 
-#'                         von Mises-Fisher envelops (Algorithm in Table 2 of 
+#'                         von Mises-Fisher envelopes (Algorithm in Table 2 of 
 #'                         Golzy and Markatou 2020);
-#'    \item \code{'rejacg'} using angular central Gaussian envelops 
+#'    \item \code{'rejacg'} using angular central Gaussian envelopes 
 #'                         (Algorithm in Table 1 of Sablica et al. 2023);
 #'    \item \code{'rejpsaw'} using projected Saw distributions 
 #'                         (Algorithm in Table 2 of Sablica et al. 2023).
@@ -126,9 +126,8 @@ dpkb <- function(x, mu, rho, logdens = FALSE) {
 #' 
 #' @details
 #' The number of observations generated is determined by \code{n} for 
-#' \code{rpkb()}. This function returns a list with the matrix of generated 
-#' observations \code{x}, the number of tries \code{numTries} and the number of
-#' acceptances \code{numAccepted}.
+#' \code{rpkb()}. This function returns the \eqn{(n \times d)}-matrix of 
+#' generated \eqn{n} observations on \eqn{\mathcal{S}^{(d-1)}}.
 #' 
 #' A limitation of the \code{rejvmf} is that the method does not ensure the
 #' computational feasibility of the sampler for \eqn{\rho} approaching 1.
@@ -152,7 +151,7 @@ dpkb <- function(x, mu, rho, logdens = FALSE) {
 #' distribution", Electronic Journal of Statistics, 17(2), 2180-2209.
 #'
 #' @srrstats {G1.0} Reference section reports the related literature.
-#' @srrstats {G1.4} roxigen2 is used.
+#' @srrstats {G1.4} roxygen2 is used.
 #' @srrstats {G2.0,G2.0a} check input mu. 
 #' @srrstats {PD1.0} references on choice and usage of the probability 
 #'                   distributions are provided.
@@ -227,7 +226,7 @@ rpkb <- function(n, mu, rho, method = 'rejacg',
       
    }
    
-   return(res)
+   return(res$x)
 }
 #'
 #' Random generation with vonMises distribution evelopes.

@@ -17,8 +17,8 @@ rpkb(
 )
 }
 \arguments{
-\item{x}{Matrix (or data.frame) of data point on the sphere
-\eqn{\mathcal{S}^{d-1}}, with \eqn{d \ge 2}.}
+\item{x}{\eqn{n \times d}-matrix (or data.frame) of \eqn{n} data point on the
+sphere \eqn{\mathcal{S}^{d-1}}, with \eqn{d \ge 2}.}
 
 \item{mu}{location vector parameter with length indicating the dimension of
 generated points.}
@@ -34,9 +34,9 @@ scale.}
 observations. The available methods are
 \itemize{
 \item \code{'rejvmf'} acceptance-rejection algorithm using
-von Mises-Fisher envelops (Algorithm in Table 2 of
+von Mises-Fisher envelopes (Algorithm in Table 2 of
 Golzy and Markatou 2020);
-\item \code{'rejacg'} using angular central Gaussian envelops
+\item \code{'rejacg'} using angular central Gaussian envelopes
 (Algorithm in Table 1 of Sablica et al. 2023);
 \item \code{'rejpsaw'} using projected Saw distributions
 (Algorithm in Table 2 of Sablica et al. 2023).
@@ -53,7 +53,7 @@ Golzy and Markatou 2020);
 }
 \description{
 The Poisson kernel-based densities are based on the normalized Poisson kernel
-and are defined on the \eqn{d}-dimensional unit sphere. Given a vector
+and are defined on the \eqn{(d-1)}-dimensional unit sphere. Given a vector
 \eqn{\mathbf{\mu} \in \mathcal{S}^{d-1}}, where \eqn{\mathcal{S}^{d-1}= 
 \{x \in \mathbb{R}^d : ||x|| = 1\}}, and a parameter \eqn{\rho} such that
 \eqn{0 < \rho < 1}, the probability density function of a \eqn{d}-variate
@@ -76,9 +76,9 @@ two-dimensional projected normal distribution. However, the connection with
 the \eqn{d}-dimensional projected normal distributions does not carry beyond
 \eqn{d=2}.
 Golzy and Markatou (2020) proposed an acceptance-rejection method for
-simulating data from a PKBD using von Mises-Fisher envelops (\code{rejvmf}
+simulating data from a PKBD using von Mises-Fisher envelopes (\code{rejvmf}
 method). Furthermore Sablica, Hornik and Leydold (2023) proposed new ways for
-simulating from the PKBD, using angular central Gaussian envelops
+simulating from the PKBD, using angular central Gaussian envelopes
 (\code{rejacg}) or using the projected Saw distributions (\code{rejpsaw}).
 }
 \details{
@@ -87,9 +87,8 @@ This function \code{dpkb()} computes the density value for a given point
 vector \code{mu} and concentration parameter \code{rho}.
 
 The number of observations generated is determined by \code{n} for
-\code{rpkb()}. This function returns a list with the matrix of generated
-observations \code{x}, the number of tries \code{numTries} and the number of
-acceptances \code{numAccepted}.
+\code{rpkb()}. This function returns the \eqn{(n \times d)}-matrix of
+generated \eqn{n} observations on \eqn{\mathcal{S}^{(d-1)}}.
 
 A limitation of the \code{rejvmf} is that the method does not ensure the
 computational feasibility of the sampler for \eqn{\rho} approaching 1.
@@ -105,10 +104,10 @@ message asking the user to install the missing package(s).
 }
 \examples{
 # Generate some data from pkbd density
-pkbd_dat <- rpkb(10, c(0.5,0), 0.5)
+pkbd_dat <- rpkb(10, c(0.5, 0), 0.5)
 
 # Calculate the PKBD density values
-dens_val <- dpkb(pkbd_dat$x, c(0.5,0.5),0.5)
+dens_val <- dpkb(pkbd_dat, c(0.5, 0.5), 0.5)
 
 }
 \references{

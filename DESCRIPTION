@@ -2,15 +2,17 @@ Type: Package
 Package: QuadratiK
 Title: Collection of Methods Constructed using Kernel-Based Quadratic
         Distances
-Version: 1.1.2
+Version: 1.1.3
 Authors@R: c(
-    person("Giovanni", "Saraceno", ,"gsaracen@buffalo.edu", role = c("aut", "cre"),
+    person("Giovanni", "Saraceno", ,"giovanni.saraceno@unipd.it", role = c("aut", "cre"),
            comment = "ORCID 000-0002-1753-2367"),
     person("Marianthi", "Markatou", role = "aut"),
     person("Raktim", "Mukhopadhyay", role = "aut"),
-    person("Mojgan", "Golzy", role = c("aut"))
+    person("Mojgan", "Golzy", role = c("aut")),
+    person("Hingee", "Kassel", role = "rev"),
+    person("Emi", "Tanaka", role = "rev")
   )
-Maintainer: Giovanni Saraceno <gsaracen@buffalo.edu>
+Maintainer: Giovanni Saraceno <giovanni.saraceno@unipd.it>
 Description: It includes test for multivariate normality, test for uniformity on the d-dimensional 
     Sphere, non-parametric two- and k-sample tests, random generation of points from the Poisson 
     kernel-based density and clustering algorithm for spherical data. For more information see
@@ -21,9 +23,9 @@ Description: It includes test for multivariate normality, test for uniformity on
     and Golzy, M. and Markatou, M. (2020) <doi:10.1080/10618600.2020.1740713>.
 License: GPL (>= 3)
 URL: https://CRAN.R-project.org/package=QuadratiK,
-        https://github.com/giovsaraceno/QuadratiK-package,
-        https://giovsaraceno.github.io/QuadratiK-package/
-BugReports: https://github.com/giovsaraceno/QuadratiK-package/issues
+        https://github.com/ropensci/QuadratiK/,
+        https://docs.ropensci.org/QuadratiK/
+BugReports: https://github.com/ropensci/QuadratiK/issues
 Depends: R (>= 3.5.0)
 Imports: parallel, doParallel, foreach, ggplot2, ggpubr, methods,
         moments, mvtnorm, Rcpp, RcppEigen, rlecuyer, sn, stats, rrcov,
@@ -36,13 +38,15 @@ VignetteBuilder: knitr
 Config/testthat/edition: 3
 Encoding: UTF-8
 LazyData: true
-RoxygenNote: 7.3.1
+RoxygenNote: 7.3.2
 Language: en-US
 NeedsCompilation: yes
-Packaged: 2024-10-29 10:17:49 UTC; sarac
+Packaged: 2025-02-04 14:23:35 UTC; sarac
 Author: Giovanni Saraceno [aut, cre] (ORCID 000-0002-1753-2367),
   Marianthi Markatou [aut],
   Raktim Mukhopadhyay [aut],
-  Mojgan Golzy [aut]
+  Mojgan Golzy [aut],
+  Hingee Kassel [rev],
+  Emi Tanaka [rev]
 Repository: CRAN
-Date/Publication: 2024-10-29 11:00:02 UTC
+Date/Publication: 2025-02-04 21:10:02 UTC

@@ -67,7 +67,8 @@ National Science Foundation.
 The \code{QuadratiK} package is also available in Python on PyPI
 \url{https://pypi.org/project/QuadratiK/} and also as a Dashboard application.
 Usage instruction for the Dashboard can be found at
-\url{https://quadratik.readthedocs.io/en/latest/user_guide/dashboard_application_usage.html}.
+<https://quadratik.readthedocs.io/en/latest/user_guide/
+dashboard_application_usage.html>.
 }
 \references{
 Saraceno, G., Markatou, M., Mukhopadhyay, R. and Golzy, M.
@@ -92,14 +93,14 @@ https://doi.org/10.48550/arXiv.2407.16374
 Useful links:
 \itemize{
   \item \url{https://CRAN.R-project.org/package=QuadratiK}
-  \item \url{https://github.com/giovsaraceno/QuadratiK-package}
-  \item \url{https://giovsaraceno.github.io/QuadratiK-package/}
-  \item Report bugs at \url{https://github.com/giovsaraceno/QuadratiK-package/issues}
+  \item \url{https://github.com/ropensci/QuadratiK/}
+  \item \url{https://docs.ropensci.org/QuadratiK/}
+  \item Report bugs at \url{https://github.com/ropensci/QuadratiK/issues}
 }
 
 }
 \author{
 Giovanni Saraceno, Marianthi Markatou, Raktim Mukhopadhyay, Mojgan Golzy
 
-Maintainer: Giovanni Saraceno \email{gsaracen@buffalo.edu}
+Maintainer: Giovanni Saraceno \email{giovanni.saracen@unipd.it}
 }
